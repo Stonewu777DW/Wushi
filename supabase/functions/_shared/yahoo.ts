@@ -105,7 +105,7 @@ export async function syncTeams(userId: string) {
 }
 
 /**
- * Refreshes this and last week's matchups for every league the user is in (last week so it
+ * Refreshes next, this and last week's matchups for every league the user is in (last week so it
  * can be settled), then settles finished bets. Anyone in a league can pull the whole league's
  * scoreboard, so one linked user per league is enough.
  */
@@ -117,7 +117,8 @@ export async function syncMatchups(userId: string) {
   const rows = (await Promise.all(leagueKeys.map(async (leagueKey) => {
     const league = (await get(token, `league/${leagueKey}`)).league[0];
     const current = Number(league.current_week);
-    const weeks = [current, current - 1].filter((w) => w >= 1);
+    // Next week too, so its lines exist before it starts (betting closes at week start).
+    const weeks = [current + 1, current, current - 1].filter((w) => w >= 1 && w <= Number(league.end_week));
     return Promise.all(weeks.map(async (week) => {
       const scoreboard = (await get(token, `league/${leagueKey}/scoreboard;week=${week}`)).league[1].scoreboard;
       return items(scoreboard.matchups).map((entry) => {
