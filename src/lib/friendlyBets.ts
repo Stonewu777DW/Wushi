@@ -3,6 +3,9 @@
 import { supabase } from './supabase';
 import type { BetSide, FriendlyBet, FriendlyWager } from './types';
 
+// A maker can have this many open bets per group at once (enforced by create_friendly_bet).
+export const MAX_LIVE_BETS = 3;
+
 export type Member = { user_id: string; name: string; avatar_url: string | null };
 
 async function unwrap<T>(query: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T> {

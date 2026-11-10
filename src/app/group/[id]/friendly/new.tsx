@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { Text } from '../../../../lib/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { createBet, listMembers, type Member } from '../../../../lib/friendlyBets';
+import { createBet, listBets, listMembers, MAX_LIVE_BETS, type Member } from '../../../../lib/friendlyBets';
 import { useSession } from '../../../../lib/session';
 import type { FriendlyBet } from '../../../../lib/types';
 import { colors, placeholder, ui } from '../../../../lib/ui';
@@ -41,9 +41,11 @@ export default function NewFriendlyBet() {
   const [appBanks, setAppBanks] = useState(false);
   const [significance, setSignificance] = useState<FriendlyBet['significance']>('small');
   const [error, setError] = useState<string | null>(null);
+  const [liveBets, setLiveBets] = useState(0);
 
   useEffect(() => {
     listMembers(groupId).then((m) => setMembers(m.filter((x) => x.user_id !== me)));
+    listBets(groupId).then((b) => setLiveBets(b.filter((x) => x.maker_id === me && x.status === 'open').length));
   }, [groupId, me]);
 
   async function submit() {
@@ -109,7 +111,12 @@ export default function NewFriendlyBet() {
           : 'You earn a bonus if 40% or more of the coins land on the losing side, and pay the gap if 80% or more land on the winning side.'}
       </Text>
 
-      <Pressable style={[ui.button, { marginTop: 8 }]} onPress={submit}>
+      <Text style={liveBets >= MAX_LIVE_BETS ? ui.error : ui.muted}>
+        {liveBets >= MAX_LIVE_BETS
+          ? `You already have ${MAX_LIVE_BETS} live bets in this group. Settle or cancel one to make another.`
+          : `Live bets: ${liveBets} of ${MAX_LIVE_BETS}`}
+      </Text>
+      <Pressable style={[ui.button, liveBets >= MAX_LIVE_BETS && { opacity: 0.4 }]} disabled={liveBets >= MAX_LIVE_BETS} onPress={submit}>
         <Text style={ui.buttonText}>Post line</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
