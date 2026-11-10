@@ -103,3 +103,56 @@ export async function syncTeams(userId: string) {
   }
   return rows;
 }
+
+/**
+ * Refreshes next, this and last week's matchups for every league the user is in (last week so it
+ * can be settled), then settles finished bets. Anyone in a league can pull the whole league's
+ * scoreboard, so one linked user per league is enough.
+ */
+export async function syncMatchups(userId: string) {
+  const token = await accessToken(userId);
+  const { data: teams } = await admin.from('fantasy_teams').select('team_key').eq('user_id', userId);
+  const leagueKeys = [...new Set((teams ?? []).map((t) => t.team_key.split('.t.')[0]))];
+
+  const rows = (await Promise.all(leagueKeys.map(async (leagueKey) => {
+    const league = (await get(token, `league/${leagueKey}`)).league[0];
+    const current = Number(league.current_week);
+    // Next week too, so its lines exist before it starts (betting closes at week start).
+    const weeks = [current + 1, current, current - 1].filter((w) => w >= 1 && w <= Number(league.end_week));
+    return Promise.all(weeks.map(async (week) => {
+      const scoreboard = (await get(token, `league/${leagueKey}/scoreboard;week=${week}`)).league[1].scoreboard;
+      return items(scoreboard.matchups).map((entry) => {
+        const matchup = entry.matchup;
+        const [t1, t2] = items(matchup['0'].teams).map((t) => ({
+          meta: merge(t.team[0]),
+          stats: merge(t.team.slice(1)),
+        }));
+        return {
+          id: `${t1.meta.team_key}:${week}`,
+          league_key: leagueKey,
+          league_name: league.name,
+          week,
+          starts_at: new Date(`${matchup.week_start}T00:00:00Z`).toISOString(),
+          completed: matchup.status === 'postevent',
+          team1_key: t1.meta.team_key,
+          team1_name: t1.meta.name,
+          team1_points: Number(t1.stats.team_points.total),
+          team1_projected: t1.stats.team_projected_points ? Number(t1.stats.team_projected_points.total) : null,
+          team2_key: t2.meta.team_key,
+          team2_name: t2.meta.name,
+          team2_points: Number(t2.stats.team_points.total),
+          team2_projected: t2.stats.team_projected_points ? Number(t2.stats.team_projected_points.total) : null,
+          updated_at: new Date().toISOString(),
+        };
+      });
+    }));
+  }))).flat(2);
+
+  if (rows.length) {
+    const { error } = await admin.from('fantasy_matchups').upsert(rows);
+    if (error) throw error;
+  }
+  const { error } = await admin.rpc('settle_fantasy_bets');
+  if (error) throw error;
+  return rows;
+}

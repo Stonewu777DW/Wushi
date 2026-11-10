@@ -63,6 +63,38 @@ export type FantasyTeam = {
   synced_at: string;
 };
 
+export type FantasyMatchup = {
+  id: string;
+  league_key: string;
+  league_name: string;
+  week: number;
+  starts_at: string;
+  completed: boolean;
+  team1_key: string;
+  team1_name: string;
+  team1_points: number;
+  team1_projected: number | null;
+  team2_key: string;
+  team2_name: string;
+  team2_points: number;
+  team2_projected: number | null;
+};
+
+export type FantasyBet = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  matchup_id: string;
+  market: 'spread' | 'over' | 'under';
+  team_key: string;
+  point: number;
+  price: number;
+  stake: number;
+  status: 'open' | 'won' | 'lost' | 'push';
+  created_at: string;
+  settled_at: string | null;
+};
+
 export type EventKind = 'other' | 'golf' | 'poker';
 
 export type GroupEvent = {
