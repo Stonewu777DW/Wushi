@@ -17,3 +17,5 @@ export type Group = {
 };
 
 export type Standing = { user_id: string; name: string; avatar_url: string | null; balance: number };
+
+export type Award = { user_id: string; kind: 'month' | 'year'; period_start: string; net: number };

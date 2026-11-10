@@ -9,4 +9,6 @@ export const ui = StyleSheet.create({
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderColor: '#eee' },
   error: { color: '#c00' },
+  chip: { borderWidth: 1, borderColor: '#ccc', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 12 },
+  chipActive: { backgroundColor: '#111', borderColor: '#111' },
 });
