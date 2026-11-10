@@ -18,6 +18,7 @@ function RootStack() {
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="group/[id]/index" options={{ title: 'Group' }} />
         <Stack.Screen name="group/[id]/[sport]" options={{ title: 'Sports bets' }} />
+        <Stack.Screen name="group/[id]/fantasy" options={{ title: 'Fantasy Football' }} />
       </Stack.Protected>
     </Stack>
   );

@@ -99,6 +99,11 @@ export default function GroupScreen() {
           </Pressable>
         </Link>
       ))}
+      <Link href={`/group/${id}/fantasy`} asChild>
+        <Pressable style={ui.button}>
+          <Text style={ui.buttonText}>Bet on Fantasy Football</Text>
+        </Pressable>
+      </Link>
       <Text style={ui.title}>Leaderboard</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {PERIODS.map((p) => (
