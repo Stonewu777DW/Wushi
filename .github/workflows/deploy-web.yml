@@ -24,5 +24,12 @@ jobs:
       - run: npm ci
       - run: npx expo export --platform web
       - run: npx eas-cli@latest init --non-interactive --force
-      # PR #N stays at https://wushi--pr-N.expo.app; main is https://wushi.expo.app
-      - run: npx eas-cli@latest deploy --non-interactive --dev-domain wushi ${{ github.event_name == 'pull_request' && format('--alias pr-{0}', github.event.number) || '--prod' }}
+      # main updates https://wushi.expo.app. PRs get a one-off URL (the free plan allows only
+      # 5 aliases, so no per-PR alias); it's shown in the job summary.
+      - if: github.event_name != 'pull_request'
+        run: npx eas-cli@latest deploy --non-interactive --dev-domain wushi --prod
+      - if: github.event_name == 'pull_request'
+        run: |
+          set -o pipefail
+          npx eas-cli@latest deploy --non-interactive --dev-domain wushi 2>&1 | tee deploy.log
+          echo "Preview: $(grep -o 'https://wushi--[a-z0-9-]*\.expo\.app' deploy.log | head -1)" >> "$GITHUB_STEP_SUMMARY"
