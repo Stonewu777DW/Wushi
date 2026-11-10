@@ -1,0 +1,127 @@
+import { useCallback, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { supabase } from '../../../lib/supabase';
+import type { Game, GameLine, SportsBet } from '../../../lib/types';
+import { ui } from '../../../lib/ui';
+
+const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
+
+function lineLabel(l: Pick<GameLine, 'market' | 'outcome' | 'point' | 'price'>, game: Pick<Game, 'home_team' | 'away_team'>) {
+  const side = l.outcome === 'home' ? game.home_team : l.outcome === 'away' ? game.away_team : l.outcome === 'over' ? 'Over' : 'Under';
+  const point = l.market === 'spreads' ? ` ${signed(l.point!)}` : l.market === 'totals' ? ` ${l.point}` : '';
+  return `${side}${point} (${signed(l.price)})`;
+}
+
+// Profit on a winning bet at American odds; matches settle_sports_bets().
+const toWin = (stake: number, price: number) => Math.floor(price > 0 ? (stake * price) / 100 : (stake * 100) / -price);
+
+const MARKETS = ['h2h', 'spreads', 'totals'] as const;
+const MARKET_NAMES = { h2h: 'Moneyline', spreads: 'Spread', totals: 'Total' };
+
+export default function NflScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [games, setGames] = useState<Game[]>([]);
+  const [bets, setBets] = useState<SportsBet[]>([]);
+  const [pick, setPick] = useState<{ game: Game; line: GameLine } | null>(null);
+  const [stake, setStake] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    const now = new Date();
+    const weekOut = new Date(now.getTime() + 7 * 24 * 3600 * 1000);
+    supabase
+      .from('games')
+      .select('*, game_lines(market, outcome, point, price)')
+      .eq('sport', 'americanfootball_nfl')
+      .gt('commence_time', now.toISOString())
+      .lt('commence_time', weekOut.toISOString())
+      .order('commence_time')
+      .then(({ data, error }) => {
+        setError(error?.message ?? null);
+        setGames((data ?? []) as Game[]);
+      });
+    supabase.auth.getUser().then(({ data }) =>
+      supabase
+        .from('sports_bets')
+        .select('*, games(home_team, away_team)')
+        .eq('group_id', id)
+        .eq('user_id', data.user!.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+        .then(({ data }) => setBets((data ?? []) as SportsBet[])),
+    );
+  }, [id]);
+  useFocusEffect(load);
+
+  async function placeBet() {
+    if (!pick) return;
+    const { error } = await supabase.rpc('place_sports_bet', {
+      p_group: id,
+      p_game: pick.game.id,
+      p_market: pick.line.market,
+      p_outcome: pick.line.outcome,
+      p_stake: Number(stake),
+    });
+    if (error) return setError(error.message);
+    setPick(null);
+    setStake('');
+    load();
+  }
+
+  return (
+    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+      {error && <Text style={ui.error}>{error}</Text>}
+
+      {pick && (
+        <View style={{ gap: 8, padding: 12, borderWidth: 1, borderColor: '#111', borderRadius: 8 }}>
+          <Text style={{ fontWeight: '600' }}>{lineLabel(pick.line, pick.game)}</Text>
+          <TextInput style={ui.input} placeholder="Stake (WC)" keyboardType="number-pad" value={stake} onChangeText={setStake} />
+          {Number(stake) > 0 && <Text style={ui.muted}>To win {toWin(Number(stake), pick.line.price)} WC</Text>}
+          <Pressable style={ui.button} onPress={placeBet}>
+            <Text style={ui.buttonText}>Place bet</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {games.length === 0 && <Text style={ui.muted}>No NFL games with lines in the next 7 days.</Text>}
+      {games.map((game) => (
+        <View key={game.id} style={{ gap: 6, paddingVertical: 8, borderBottomWidth: 1, borderColor: '#eee' }}>
+          <Text style={{ fontWeight: '600' }}>
+            {game.away_team} @ {game.home_team}
+          </Text>
+          <Text style={ui.muted}>{new Date(game.commence_time).toLocaleString()}</Text>
+          {MARKETS.map((market) => {
+            const lines = game.game_lines.filter((l) => l.market === market);
+            if (lines.length === 0) return null;
+            return (
+              <View key={market} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[ui.muted, { width: 80 }]}>{MARKET_NAMES[market]}</Text>
+                {lines.map((line) => (
+                  <Pressable
+                    key={line.outcome}
+                    onPress={() => setPick({ game, line })}
+                    style={{ flex: 1, padding: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 6 }}
+                  >
+                    <Text style={{ fontSize: 12 }}>{lineLabel(line, game)}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            );
+          })}
+        </View>
+      ))}
+
+      <Text style={ui.title}>My bets</Text>
+      {bets.length === 0 && <Text style={ui.muted}>No bets yet.</Text>}
+      {bets.map((b) => (
+        <View key={b.id} style={ui.row}>
+          <Text style={{ flex: 1 }}>{lineLabel(b, b.games)}</Text>
+          <Text>
+            {b.stake} WC · {b.status === 'open' ? `to win ${toWin(b.stake, b.price)}` : b.status}
+          </Text>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
