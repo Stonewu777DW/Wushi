@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { Avatar } from '../../../lib/Avatar';
 import type { Award, FantasyTeam, Group, Profile, Standing } from '../../../lib/types';
 import { record } from '../../../lib/YahooFantasy';
+import { SPORTS } from '../../../lib/sports';
 import { ui } from '../../../lib/ui';
 import { WuCoin } from '../../../lib/WuCoin';
 
@@ -91,11 +92,13 @@ export default function GroupScreen() {
       <Pressable style={ui.buttonOutline} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
         <Text style={ui.buttonOutlineText}>Invite friends ({group.invite_code})</Text>
       </Pressable>
-      <Link href={`/group/${id}/nfl`} asChild>
-        <Pressable style={ui.button}>
-          <Text style={ui.buttonText}>Bet on NFL this week</Text>
-        </Pressable>
-      </Link>
+      {SPORTS.map((s) => (
+        <Link key={s.key} href={`/group/${id}/${s.key}`} asChild>
+          <Pressable style={ui.button}>
+            <Text style={ui.buttonText}>Bet on {s.label}</Text>
+          </Pressable>
+        </Link>
+      ))}
       <Text style={ui.title}>Leaderboard</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {PERIODS.map((p) => (
