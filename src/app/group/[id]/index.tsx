@@ -104,6 +104,11 @@ export default function GroupScreen() {
           </Pressable>
         </Link>
       ))}
+      <Link href={`/group/${id}/events`} asChild>
+        <Pressable style={ui.button}>
+          <Text style={ui.buttonText}>Events</Text>
+        </Pressable>
+      </Link>
       <Text style={ui.title}>Leaderboard</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {PERIODS.map((p) => (
