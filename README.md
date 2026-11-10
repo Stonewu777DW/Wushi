@@ -6,8 +6,12 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 
 1. Create a Supabase project. Under Authentication > Sign In / Providers > Email, turn off "Confirm email" (the app uses email + password, so no emails are sent).
 2. Run `supabase/migrations/*.sql` in order (SQL editor, or `supabase db push`). `0002` creates the public `avatars` storage bucket.
-3. `cp .env.example .env` and fill in the project URL and anon key.
+3. `cp .env.example .env` (it already points at the shared Supabase project).
 4. `npm install && npx expo start`
+
+## Web link
+
+`.github/workflows/deploy-web.yml` deploys the web build to Expo Hosting (needs the `EXPO_TOKEN` repo secret). Each pull request gets a preview link in its workflow log; merging to `main` updates https://wushi.expo.app, the link to share with friends.
 
 ## How coins work
 
