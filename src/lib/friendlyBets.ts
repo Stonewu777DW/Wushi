@@ -30,7 +30,7 @@ export async function listMembers(groupId: string): Promise<Member[]> {
   });
 }
 
-export const createBet = (args: { groupId: string; title: string; sideA: string; sideB: string; subjectId: string | null; closesAt: Date }) =>
+export const createBet = (args: { groupId: string; title: string; sideA: string; sideB: string; subjectId: string | null; closesAt: Date; significance: FriendlyBet['significance'] }) =>
   unwrap<FriendlyBet>(
     supabase
       .rpc('create_friendly_bet', {
@@ -40,6 +40,7 @@ export const createBet = (args: { groupId: string; title: string; sideA: string;
         p_side_b: args.sideB,
         p_subject_id: args.subjectId,
         p_closes_at: args.closesAt.toISOString(),
+        p_significance: args.significance,
       })
       .single(),
   );

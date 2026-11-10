@@ -5,7 +5,7 @@ import { cancelBet, getBet, listMembers, listWagers, placeWager, resolveBet, tim
 import type { BetSide as Side, FriendlyBet, FriendlyWager as Wager } from '../../../../lib/types';
 import { useSession } from '../../../../lib/session';
 import { supabase } from '../../../../lib/supabase';
-import { colors, ui } from '../../../../lib/ui';
+import { colors, placeholder, ui } from '../../../../lib/ui';
 import { WuCoin } from '../../../../lib/WuCoin';
 
 export default function FriendlyBetScreen() {
@@ -67,6 +67,7 @@ export default function FriendlyBetScreen() {
   const isOpen = bet.status === 'open';
   const bettingOpen = isOpen && new Date(bet.closes_at) > new Date();
   const amountNum = Number.parseInt(amount, 10);
+  const amountOk = amountNum >= bet.min_wager && amountNum <= bet.max_wager && amountNum <= balance;
 
   return (
     <ScrollView style={{ backgroundColor: colors.bg }} contentContainerStyle={[ui.screen, { flexGrow: 1 }]}>
@@ -74,7 +75,7 @@ export default function FriendlyBetScreen() {
       <Text style={ui.title}>{bet.title}</Text>
       <Text style={ui.muted}>
         Line by {name(bet.maker_id)}
-        {bet.subject_id && ` · about ${name(bet.subject_id)}`} · {isOpen ? timeLeft(bet.closes_at) : bet.status} · {bet.reward_multiplier}x maker bonus
+        {bet.subject_id && ` · about ${name(bet.subject_id)}`} · {isOpen ? timeLeft(bet.closes_at) : bet.status} · {bet.significance} · {bet.reward_multiplier}x maker bonus
       </Text>
 
       {/* The book: how the money splits across the two sides. An even split means a good line. */}
@@ -108,23 +109,29 @@ export default function FriendlyBetScreen() {
       {bettingOpen && !isMaker && bet.subject_id !== me && (
         <View style={ui.card}>
           <Text style={ui.text}>Place a bet</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={ui.muted}>Stake</Text>
+            <WuCoin amount={bet.min_wager} size={16} />
+            <Text style={ui.muted}>to</Text>
+            <WuCoin amount={bet.max_wager} size={16} />
+          </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {(['a', 'b'] as const).map((s) => (
               <Pressable key={s} onPress={() => setSide(s)}
-                style={[ui.button, { flex: 1 }, side !== s && { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
-                <Text style={[ui.buttonText, side !== s && { color: colors.text }]}>{label(s)}</Text>
+                style={[side === s ? ui.button : ui.buttonOutline, { flex: 1 }]}>
+                <Text style={side === s ? ui.buttonText : ui.buttonOutlineText}>{label(s)}</Text>
               </Pressable>
             ))}
           </View>
-          <TextInput style={ui.input} placeholderTextColor={colors.muted} placeholder="Amount" keyboardType="number-pad"
+          <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder={`${bet.min_wager}–${bet.max_wager}`} keyboardType="number-pad"
             value={amount} onChangeText={(t) => setAmount(t.replace(/\D/g, ''))} />
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Text style={ui.muted}>Balance</Text>
             <WuCoin amount={balance} size={16} />
           </View>
-          <Pressable style={[ui.button, !(amountNum > 0) && { opacity: 0.4 }]} disabled={!(amountNum > 0)}
+          <Pressable style={[ui.button, !amountOk && { opacity: 0.4 }]} disabled={!amountOk}
             onPress={() => run(() => placeWager(bet.id, side, amountNum))}>
-            <Text style={ui.buttonText}>{amountNum > 0 ? `Bet ${amountNum} on ${label(side)}` : 'Enter an amount'}</Text>
+            <Text style={ui.buttonText}>{amountOk ? `Bet ${amountNum} on ${label(side)}` : amountNum > balance ? 'Not enough WuCoins' : `Enter ${bet.min_wager}–${bet.max_wager}`}</Text>
           </Pressable>
         </View>
       )}
@@ -137,9 +144,9 @@ export default function FriendlyBetScreen() {
             <WuCoin amount={bet.escrow_held} size={16} />
           </View>
           <Text style={ui.muted}>You can settle once betting closes, or cancel now and refund every bet.</Text>
-          <Pressable style={[ui.button, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.danger }]}
+          <Pressable style={[ui.buttonOutline, { borderColor: colors.danger }]}
             onPress={() => run(() => cancelBet(bet.id))}>
-            <Text style={[ui.buttonText, { color: colors.danger }]}>Cancel bet</Text>
+            <Text style={[ui.buttonOutlineText, { color: colors.danger }]}>Cancel bet</Text>
           </Pressable>
         </View>
       )}

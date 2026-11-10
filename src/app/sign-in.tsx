@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { InstallHint } from '../lib/InstallHint';
-import { ui } from '../lib/ui';
+import { placeholder, ui } from '../lib/ui';
+import { WuCoin } from '../lib/WuCoin';
 
 // Username + password only. Supabase Auth needs an email, so each username maps to an
 // address nobody receives mail at. "Confirm email" is off, so no email is ever sent.
@@ -38,16 +39,19 @@ export default function SignIn() {
 
   return (
     <View style={ui.screen}>
-      <Text style={ui.title}>Wushi</Text>
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Username" autoCapitalize="none" autoCorrect={false}
+      <View style={{ alignItems: 'center', gap: 8, marginVertical: 24 }}>
+        <WuCoin size={72} />
+        <Text style={[ui.title, { fontSize: 32 }]}>Wushi</Text>
+      </View>
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Username" autoCapitalize="none" autoCorrect={false}
         value={username} onChangeText={setUsername} />
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Password (6+ characters)" secureTextEntry
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Password (6+ characters)" secureTextEntry
         value={password} onChangeText={setPassword} />
       <Pressable style={ui.button} onPress={signIn}>
         <Text style={ui.buttonText}>Sign in</Text>
       </Pressable>
       <Pressable onPress={signUp}>
-        <Text style={ui.muted}>New here? Create account</Text>
+        <Text style={[ui.link, { textAlign: 'center' }]}>New here? Create account</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
       <InstallHint />

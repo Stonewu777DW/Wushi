@@ -3,7 +3,8 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { createBet, listMembers, type Member } from '../../../../lib/friendlyBets';
 import { useSession } from '../../../../lib/session';
-import { colors, ui } from '../../../../lib/ui';
+import type { FriendlyBet } from '../../../../lib/types';
+import { colors, placeholder, ui } from '../../../../lib/ui';
 
 const DAY = 86_400_000;
 // Longer bets pay the maker more for a good line, so the length is a deliberate choice.
@@ -13,21 +14,16 @@ const DURATIONS = [
   { label: '1 month', ms: 30 * DAY },
   { label: '1 year', ms: 365 * DAY },
 ];
+const SIGNIFICANCE: { label: string; value: FriendlyBet['significance'] }[] = [
+  { label: 'Small', value: 'small' },
+  { label: 'Medium', value: 'medium' },
+  { label: 'Big', value: 'big' },
+];
 
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: selected ? colors.accent : colors.border,
-        backgroundColor: selected ? colors.accent : colors.surface,
-      }}
-    >
-      <Text style={{ color: selected ? colors.onAccent : colors.text, fontWeight: '600' }}>{label}</Text>
+    <Pressable onPress={onPress} style={[ui.pill, selected && ui.pillActive]}>
+      <Text style={selected ? ui.pillActiveText : ui.text}>{label}</Text>
     </Pressable>
   );
 }
@@ -41,6 +37,7 @@ export default function NewFriendlyBet() {
   const [sideB, setSideB] = useState('No');
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [duration, setDuration] = useState(DURATIONS[1]);
+  const [significance, setSignificance] = useState<FriendlyBet['significance']>('small');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,6 +53,7 @@ export default function NewFriendlyBet() {
         sideB: sideB.trim(),
         subjectId,
         closesAt: new Date(Date.now() + duration.ms),
+        significance,
       });
       router.replace(`/group/${groupId}/friendly/${bet.id}`);
     } catch (e) {
@@ -69,11 +67,11 @@ export default function NewFriendlyBet() {
       <Text style={ui.muted}>
         Set a line you think splits the group evenly. A balanced book earns you WuCoins; a one-sided one costs you.
       </Text>
-      <TextInput style={ui.input} placeholderTextColor={colors.muted} placeholder="e.g. Will Mike shoot under 90 Saturday?"
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="e.g. Will Mike shoot under 90 Saturday?"
         value={title} onChangeText={setTitle} maxLength={120} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        <TextInput style={[ui.input, { flex: 1, minWidth: 0 }]} placeholderTextColor={colors.muted} placeholder="Side A" value={sideA} onChangeText={setSideA} maxLength={30} />
-        <TextInput style={[ui.input, { flex: 1, minWidth: 0 }]} placeholderTextColor={colors.muted} placeholder="Side B" value={sideB} onChangeText={setSideB} maxLength={30} />
+        <TextInput style={[ui.input, { flex: 1, minWidth: 0 }]} placeholderTextColor={placeholder} placeholder="Side A" value={sideA} onChangeText={setSideA} maxLength={30} />
+        <TextInput style={[ui.input, { flex: 1, minWidth: 0 }]} placeholderTextColor={placeholder} placeholder="Side B" value={sideB} onChangeText={setSideB} maxLength={30} />
       </View>
 
       <Text style={ui.text}>Who is it about?</Text>
@@ -86,13 +84,19 @@ export default function NewFriendlyBet() {
       </View>
 
       <Text style={ui.text}>Betting closes in</Text>
-      <Text style={ui.muted}>Longer bets pay the maker more for a good line.</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {DURATIONS.map((d) => (
           <Chip key={d.label} label={d.label} selected={d === duration} onPress={() => setDuration(d)} />
         ))}
       </View>
 
+      <Text style={ui.text}>How big a deal is it?</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {SIGNIFICANCE.map((x) => (
+          <Chip key={x.value} label={x.label} selected={x.value === significance} onPress={() => setSignificance(x.value)} />
+        ))}
+      </View>
+      <Text style={ui.muted}>Bigger and longer bets need bigger stakes and pay the maker more for a good line.</Text>
       <Pressable style={[ui.button, { marginTop: 8 }]} onPress={submit}>
         <Text style={ui.buttonText}>Post line</Text>
       </Pressable>

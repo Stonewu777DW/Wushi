@@ -3,7 +3,8 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import type { Game, GameLine, SportsBet } from '../../../lib/types';
-import { ui } from '../../../lib/ui';
+import { colors, placeholder, ui } from '../../../lib/ui';
+import { WuCoin } from '../../../lib/WuCoin';
 
 const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 
@@ -70,14 +71,19 @@ export default function NflScreen() {
   }
 
   return (
-    <ScrollView style={{ backgroundColor: '#fff' }} contentContainerStyle={{ padding: 16, gap: 12 }}>
+    <ScrollView style={{ backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, gap: 12 }}>
       {error && <Text style={ui.error}>{error}</Text>}
 
       {pick && (
-        <View style={{ gap: 8, padding: 12, borderWidth: 1, borderColor: '#111', borderRadius: 8 }}>
-          <Text style={{ fontWeight: '600' }}>{lineLabel(pick.line, pick.game)}</Text>
-          <TextInput style={ui.input} placeholder="Stake (WC)" keyboardType="number-pad" value={stake} onChangeText={setStake} />
-          {Number(stake) > 0 && <Text style={ui.muted}>To win {toWin(Number(stake), pick.line.price)} WC</Text>}
+        <View style={[ui.card, { borderColor: colors.accent }]}>
+          <Text style={[ui.text, { fontWeight: '600' }]}>{lineLabel(pick.line, pick.game)}</Text>
+          <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Stake (WuCoins)" keyboardType="number-pad" value={stake} onChangeText={setStake} />
+          {Number(stake) > 0 && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={ui.muted}>To win</Text>
+              <WuCoin amount={toWin(Number(stake), pick.line.price)} size={16} />
+            </View>
+          )}
           <Pressable style={ui.button} onPress={placeBet}>
             <Text style={ui.buttonText}>Place bet</Text>
           </Pressable>
@@ -86,8 +92,8 @@ export default function NflScreen() {
 
       {games.length === 0 && <Text style={ui.muted}>No NFL games with lines in the next 7 days.</Text>}
       {games.map((game) => (
-        <View key={game.id} style={{ gap: 6, paddingVertical: 8, borderBottomWidth: 1, borderColor: '#eee' }}>
-          <Text style={{ fontWeight: '600' }}>
+        <View key={game.id} style={{ gap: 6, paddingVertical: 8, borderBottomWidth: 1, borderColor: colors.border }}>
+          <Text style={[ui.text, { fontWeight: '600' }]}>
             {game.away_team} @ {game.home_team}
           </Text>
           <Text style={ui.muted}>{new Date(game.commence_time).toLocaleString()}</Text>
@@ -101,9 +107,9 @@ export default function NflScreen() {
                   <Pressable
                     key={line.outcome}
                     onPress={() => setPick({ game, line })}
-                    style={{ flex: 1, padding: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 6 }}
+                    style={{ flex: 1, padding: 8, borderWidth: 1, borderRadius: 6, backgroundColor: colors.surface, borderColor: pick?.game.id === game.id && pick.line === line ? colors.accent : colors.border }}
                   >
-                    <Text style={{ fontSize: 12 }}>{lineLabel(line, game)}</Text>
+                    <Text style={[ui.text, { fontSize: 12 }]}>{lineLabel(line, game)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -116,10 +122,11 @@ export default function NflScreen() {
       {bets.length === 0 && <Text style={ui.muted}>No bets yet.</Text>}
       {bets.map((b) => (
         <View key={b.id} style={ui.row}>
-          <Text style={{ flex: 1 }}>{lineLabel(b, b.games)}</Text>
-          <Text>
-            {b.stake} WC · {b.status === 'open' ? `to win ${toWin(b.stake, b.price)}` : b.status}
-          </Text>
+          <Text style={[ui.text, { flex: 1 }]}>{lineLabel(b, b.games)}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <WuCoin amount={b.stake} size={14} />
+            <Text style={ui.muted}>{b.status === 'open' ? `to win ${toWin(b.stake, b.price)}` : b.status}</Text>
+          </View>
         </View>
       ))}
     </ScrollView>
