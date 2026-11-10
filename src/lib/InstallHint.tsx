@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
-import { ui } from './ui';
+import { Platform, Pressable, View } from 'react-native';
+import { Text } from './Text';
+import { colors, ui } from './ui';
 
 // Chrome/Android fires this event when the site can be installed; it isn't in the TS DOM types.
 type InstallPromptEvent = Event & { prompt: () => Promise<void> };
@@ -33,7 +34,7 @@ export function InstallHint() {
 
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
   return (
-    <View style={{ padding: 12, borderRadius: 8, backgroundColor: '#f3f3f3' }}>
+    <View style={{ padding: 12, borderRadius: 8, backgroundColor: colors.surface }}>
       <Text style={ui.muted}>
         {ios
           ? 'Get the app: tap Share, then "Add to Home Screen".'
