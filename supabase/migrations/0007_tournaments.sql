@@ -134,3 +134,17 @@ begin
 end $$;
 
 revoke execute on function create_tournament, join_tournament, leave_tournament, complete_tournament, cancel_tournament from anon;
+
+-- Count tournaments in the leaderboards: a tournament is settled once it pays out or refunds.
+-- Compared as text because a new enum value can't be used in the transaction that adds it.
+create or replace view settled_results with (security_invoker = true) as
+  with settled as (
+    select ref_id, max(created_at) as settled_at
+    from ledger_entries
+    where ref_id is not null
+    group by ref_id
+    having bool_or(reason::text in ('bet_payout', 'bet_refund', 'maker_settlement', 'tournament_payout', 'tournament_refund'))
+  )
+  select l.group_id, l.user_id, l.amount, s.settled_at
+  from ledger_entries l
+  join settled s using (ref_id);
