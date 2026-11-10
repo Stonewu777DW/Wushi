@@ -76,7 +76,7 @@ export default function FriendlyBetScreen() {
       <Text style={ui.title}>{bet.title}</Text>
       <Text style={ui.muted}>
         Line by {name(bet.maker_id)}
-        {bet.subject_id && ` · about ${name(bet.subject_id)}`} · {isOpen ? timeLeft(bet.closes_at) : bet.status} · {bet.significance} · {bet.reward_multiplier}x maker bonus
+        {bet.subject_id && ` · about ${name(bet.subject_id)}`} · {isOpen ? timeLeft(bet.closes_at) : bet.status} · {bet.significance} · {bet.reward_multiplier}x maker bonus{bet.app_banks && ' · app backs it'}
       </Text>
 
       {/* The book: how the money splits across the two sides. An even split means a good line. */}
@@ -98,12 +98,18 @@ export default function FriendlyBetScreen() {
       </View>
 
       {bet.status === 'resolved' && bet.maker_reward !== null && (
-        <View style={[ui.card, { borderColor: bet.maker_reward >= 0 ? colors.accent : colors.danger }]}>
+        <View style={[ui.card, bet.maker_reward > 0 && { borderColor: colors.accent }, bet.maker_reward < 0 && { borderColor: colors.danger }]}>
           <Text>
-            {name(bet.maker_id)} {bet.maker_reward >= 0 ? 'earned' : 'paid'} for {isMaker ? 'your' : 'this'} line
+            {bet.maker_reward > 0 && `${name(bet.maker_id)} earned a bonus for ${isMaker ? 'your' : 'this'} line`}
+            {bet.maker_reward < 0 && `${name(bet.maker_id)} paid for a one-sided line`}
+            {bet.maker_reward === 0 && `${name(bet.maker_id)} broke even on ${isMaker ? 'your' : 'this'} line`}
           </Text>
-          <WuCoin amount={Math.abs(bet.maker_reward)} size={22} />
-          <Text style={ui.muted}>{bet.maker_reward >= 0 ? 'A balanced book is rewarded.' : 'One-sided books cost the maker.'}</Text>
+          {bet.maker_reward !== 0 && <WuCoin amount={Math.abs(bet.maker_reward)} size={22} />}
+          <Text style={ui.muted}>
+            {bet.maker_reward > 0 && '40% or more of the coins were on the losing side.'}
+            {bet.maker_reward < 0 && '80% or more of the coins were on the winning side, so the maker covered the gap.'}
+            {bet.maker_reward === 0 && 'No bonus and no penalty.'}
+          </Text>
         </View>
       )}
 
@@ -140,10 +146,14 @@ export default function FriendlyBetScreen() {
       {isMaker && bettingOpen && (
         <View style={ui.card}>
           <Text>Your line</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={ui.muted}>Held to cover the gap</Text>
-            <WuCoin amount={bet.escrow_held} size={16} />
-          </View>
+          {bet.app_banks ? (
+            <Text style={ui.muted}>The app backs this bet, so you can't lose coins on it.</Text>
+          ) : (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={ui.muted}>Held in case 80%+ ends up on the winner</Text>
+              <WuCoin amount={bet.escrow_held} size={16} />
+            </View>
+          )}
           <Text style={ui.muted}>You can settle once betting closes, or cancel now and refund every bet.</Text>
           <Pressable style={[ui.buttonOutline, { borderColor: colors.danger }]}
             onPress={() => run(() => cancelBet(bet.id))}>

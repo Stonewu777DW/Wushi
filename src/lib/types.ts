@@ -77,6 +77,7 @@ export type FriendlyBet = {
   status: 'open' | 'resolved' | 'cancelled';
   winning_side: BetSide | null;
   significance: 'small' | 'medium' | 'big';
+  app_banks: boolean; // the app, not the maker, backs the bet: the maker can't lose
   reward_multiplier: number;
   min_wager: number;
   max_wager: number;

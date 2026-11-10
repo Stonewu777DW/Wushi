@@ -38,6 +38,7 @@ export default function NewFriendlyBet() {
   const [sideB, setSideB] = useState('No');
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [duration, setDuration] = useState(DURATIONS[1]);
+  const [appBanks, setAppBanks] = useState(false);
   const [significance, setSignificance] = useState<FriendlyBet['significance']>('small');
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +56,7 @@ export default function NewFriendlyBet() {
         subjectId,
         closesAt: new Date(Date.now() + duration.ms),
         significance,
+        appBanks,
       });
       router.replace(`/group/${groupId}/friendly/${bet.id}`);
     } catch (e) {
@@ -65,9 +67,6 @@ export default function NewFriendlyBet() {
   return (
     <ScrollView style={{ backgroundColor: colors.bg }} contentContainerStyle={[ui.screen, { flexGrow: 1 }]}>
       <Stack.Screen options={{ title: 'Make a line' }} />
-      <Text style={ui.muted}>
-        Set a line you think splits the group evenly. A balanced book earns you WuCoins; a one-sided one costs you.
-      </Text>
       <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="e.g. Will Mike shoot under 90 Saturday?"
         value={title} onChangeText={setTitle} maxLength={120} />
       <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -98,6 +97,18 @@ export default function NewFriendlyBet() {
         ))}
       </View>
       <Text style={ui.muted}>Bigger and longer bets need bigger stakes and pay the maker more for a good line.</Text>
+
+      <Text>Who backs the bet?</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <Chip label="I do" selected={!appBanks} onPress={() => setAppBanks(false)} />
+        <Chip label="The app" selected={appBanks} onPress={() => setAppBanks(true)} />
+      </View>
+      <Text style={ui.muted}>
+        {appBanks
+          ? "No risk to you. You still earn a bonus if 40% or more of the coins land on the losing side."
+          : 'You earn a bonus if 40% or more of the coins land on the losing side, and pay the gap if 80% or more land on the winning side.'}
+      </Text>
+
       <Pressable style={[ui.button, { marginTop: 8 }]} onPress={submit}>
         <Text style={ui.buttonText}>Post line</Text>
       </Pressable>
