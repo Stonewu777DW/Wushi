@@ -37,12 +37,12 @@ export function YahooFantasy({ userId }: { userId: string }) {
 
   return (
     <View style={{ gap: 8 }}>
-      <Text style={{ fontWeight: '600' }}>Yahoo Fantasy</Text>
+      <Text style={[ui.text, { fontWeight: '600' }]}>Yahoo Fantasy</Text>
       {teams.map((t) => (
         <View key={t.team_key} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           {t.logo_url && <Image source={{ uri: t.logo_url }} style={{ width: 36, height: 36, borderRadius: 6 }} />}
           <View>
-            <Text>{t.team_name}</Text>
+            <Text style={ui.text}>{t.team_name}</Text>
             <Text style={ui.muted}>
               {t.league_name} · {record(t)}{t.rank ? ` · #${t.rank}` : ''} · {t.points_for} pts
             </Text>
@@ -50,7 +50,7 @@ export function YahooFantasy({ userId }: { userId: string }) {
         </View>
       ))}
       <Pressable onPress={teams.length ? refresh : link}>
-        <Text style={ui.muted}>{teams.length ? 'Refresh teams' : 'Link Yahoo Fantasy team'}</Text>
+        <Text style={ui.link}>{teams.length ? 'Refresh teams' : 'Link Yahoo Fantasy team'}</Text>
       </Pressable>
       {status && <Text style={ui.muted}>{status}</Text>}
     </View>

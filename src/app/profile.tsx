@@ -5,7 +5,7 @@ import { Avatar } from '../lib/Avatar';
 import { useSession } from '../lib/session';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../lib/types';
-import { ui } from '../lib/ui';
+import { placeholder, ui } from '../lib/ui';
 import { YahooFantasy } from '../lib/YahooFantasy';
 
 export default function ProfileScreen() {
@@ -47,12 +47,12 @@ export default function ProfileScreen() {
     <View style={ui.screen}>
       <Pressable onPress={pickAvatar} style={{ alignItems: 'center', gap: 6 }}>
         <Avatar url={profile.avatar_url} name={profile.display_name ?? profile.username} size={96} />
-        <Text style={ui.muted}>Change photo</Text>
+        <Text style={ui.link}>Change photo</Text>
       </Pressable>
       <Text style={ui.muted}>@{profile.username}</Text>
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Display name" value={profile.display_name ?? ''}
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Display name" value={profile.display_name ?? ''}
         onChangeText={(display_name) => setProfile({ ...profile, display_name })} maxLength={40} />
-      <TextInput style={[ui.input, { minHeight: 80 }]} placeholderTextColor="#999" placeholder="Bio" multiline value={profile.bio ?? ''}
+      <TextInput style={[ui.input, { minHeight: 80 }]} placeholderTextColor={placeholder} placeholder="Bio" multiline value={profile.bio ?? ''}
         onChangeText={(bio) => setProfile({ ...profile, bio })} maxLength={160} />
       <Pressable style={ui.button} onPress={save}>
         <Text style={ui.buttonText}>Save</Text>

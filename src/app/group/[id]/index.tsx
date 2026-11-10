@@ -6,6 +6,7 @@ import { Avatar } from '../../../lib/Avatar';
 import type { Award, FantasyTeam, Group, Profile, Standing } from '../../../lib/types';
 import { record } from '../../../lib/YahooFantasy';
 import { ui } from '../../../lib/ui';
+import { WuCoin } from '../../../lib/WuCoin';
 
 type Period = 'month' | 'year' | 'all';
 const PERIODS: { key: Period; label: string }[] = [
@@ -86,8 +87,8 @@ export default function GroupScreen() {
   return (
     <View style={ui.screen}>
       <Stack.Screen options={{ title: group.name }} />
-      <Pressable style={ui.button} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
-        <Text style={ui.buttonText}>Invite friends ({group.invite_code})</Text>
+      <Pressable style={ui.buttonOutline} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
+        <Text style={ui.buttonOutlineText}>Invite friends ({group.invite_code})</Text>
       </Pressable>
       <Link href={`/group/${id}/nfl`} asChild>
         <Pressable style={ui.button}>
@@ -100,9 +101,9 @@ export default function GroupScreen() {
           <Pressable
             key={p.key}
             onPress={() => setPeriod(p.key)}
-            style={[ui.chip, period === p.key && ui.chipActive]}
+            style={[ui.pill, period === p.key && ui.pillActive]}
           >
-            <Text style={period === p.key ? { color: '#fff' } : undefined}>{p.label}</Text>
+            <Text style={period === p.key ? ui.pillActiveText : ui.text}>{p.label}</Text>
           </Pressable>
         ))}
       </View>
@@ -113,20 +114,17 @@ export default function GroupScreen() {
         renderItem={({ item, index }) => (
           <View style={[ui.row, { alignItems: 'center' }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text>{index + 1}.</Text>
+              <Text style={ui.muted}>{index + 1}.</Text>
               <Avatar url={item.avatar_url} name={item.name} size={32} />
               <View>
-                <Text>{item.name}</Text>
+                <Text style={ui.text}>{item.name}</Text>
                 {teams.has(item.user_id) && (
                   <Text style={ui.muted}>{teams.get(item.user_id)!.team_name} · {record(teams.get(item.user_id)!)}</Text>
                 )}
               </View>
-              <Text>{trophies(item.user_id)}</Text>
+              <Text style={ui.text}>{trophies(item.user_id)}</Text>
             </View>
-            <Text>
-              {period !== 'all' && item.balance > 0 ? '+' : ''}
-              {item.balance} WC
-            </Text>
+            <WuCoin amount={item.balance} size={18} signed={period !== 'all'} />
           </View>
         )}
         ListFooterComponent={
@@ -135,12 +133,13 @@ export default function GroupScreen() {
               <Text style={ui.title}>Hall of fame</Text>
               {awards.map((a) => (
                 <View key={`${a.kind}-${a.period_start}-${a.user_id}`} style={ui.row}>
-                  <Text style={a.kind === 'year' ? { fontWeight: '700' } : undefined}>
+                  <Text style={[ui.text, a.kind === 'year' && { fontWeight: '700' }]}>
                     {a.kind === 'year' ? '🏆' : '🏅'} {awardLabel(a)}
                   </Text>
-                  <Text>
-                    {nameOf.get(a.user_id)} (+{a.net})
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={ui.text}>{nameOf.get(a.user_id)}</Text>
+                    <WuCoin amount={a.net} size={16} signed />
+                  </View>
                 </View>
               ))}
             </View>
