@@ -1,0 +1,51 @@
+import { useCallback, useState } from 'react';
+import { FlatList, Share, Pressable, Text, View } from 'react-native';
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { supabase } from '../../lib/supabase';
+import type { Group, Standing } from '../../lib/types';
+import { ui } from '../../lib/ui';
+
+export default function GroupScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [group, setGroup] = useState<Group | null>(null);
+  const [standings, setStandings] = useState<Standing[]>([]);
+
+  const load = useCallback(() => {
+    supabase.from('groups').select('*').eq('id', id).single<Group>().then(({ data }) => setGroup(data));
+    Promise.all([
+      supabase.from('group_balances').select('user_id, balance').eq('group_id', id),
+      supabase.from('group_members').select('user_id, profiles(username)').eq('group_id', id),
+    ]).then(([balances, members]) => {
+      const balanceOf = new Map((balances.data ?? []).map((b) => [b.user_id as string, b.balance as number]));
+      const rows = (members.data ?? []).map((m) => ({
+        user_id: m.user_id as string,
+        username: (m.profiles as unknown as { username: string }).username,
+        balance: balanceOf.get(m.user_id as string) ?? 0,
+      }));
+      setStandings(rows.sort((a, b) => b.balance - a.balance));
+    });
+  }, [id]);
+  useFocusEffect(load);
+
+  if (!group) return null;
+
+  return (
+    <View style={ui.screen}>
+      <Stack.Screen options={{ title: group.name }} />
+      <Pressable style={ui.button} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
+        <Text style={ui.buttonText}>Invite friends ({group.invite_code})</Text>
+      </Pressable>
+      <Text style={ui.title}>Standings</Text>
+      <FlatList
+        data={standings}
+        keyExtractor={(s) => s.user_id}
+        renderItem={({ item, index }) => (
+          <View style={ui.row}>
+            <Text>{index + 1}. {item.username}</Text>
+            <Text>{item.balance} WC</Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
