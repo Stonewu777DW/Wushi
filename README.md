@@ -4,7 +4,7 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 
 ## Setup
 
-1. Create a Supabase project. Under Authentication > Email, make the template send the `{{ .Token }}` code (the app signs in with a 6-digit code, not a link).
+1. Create a Supabase project. Under Authentication > Sign In / Providers > Email, turn off "Confirm email" (the app uses email + password, so no emails are sent).
 2. Run `supabase/migrations/*.sql` in order (SQL editor, or `supabase db push`). `0002` creates the public `avatars` storage bucket.
 3. `cp .env.example .env` and fill in the project URL and anon key.
 4. `npm install && npx expo start`
