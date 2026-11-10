@@ -26,14 +26,14 @@ The app is the house for sports bets on NFL, NBA, MLB and NHL. `supabase/functio
    ```sql
    select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
    select vault.create_secret('<same CRON_SECRET>', 'cron_secret');
-   select cron.schedule('sync-sports', '0 */6 * * *', $$
+   select cron.schedule('sync-sports', '0 14 * * *', $$
      select net.http_post(
        url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url') || '/functions/v1/sync-sports',
        headers := jsonb_build_object('x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret'))
      );
    $$);
    ```
-   Each run costs 5 Odds API credits per in-season league (3 for odds, 2 for scores); off-season leagues are skipped. With 3 leagues in season, every 6 hours is about 1,800 credits a month, well over the free tier's 500, so use a paid plan or schedule it less often. Lines are only as fresh as the schedule, and a bet locks the line it was placed at, so stale lines are the house's risk.
+   Each run costs 5 Odds API credits per in-season league (3 for odds, 2 for scores); off-season leagues are skipped. Daily is about 150 credits a month per league, so three leagues in season fit the free tier's 500. Lines are only as fresh as the schedule, and a bet locks the line it was placed at, so stale lines are the house's risk. Running more often (every 6 hours with three leagues is about 1,800 a month) needs a paid plan.
 
 ## How coins work
 
