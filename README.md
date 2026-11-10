@@ -20,3 +20,9 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 - `src/app/` — screens (Expo Router)
 - `src/lib/` — Supabase client, session, shared types and styles
 - `supabase/migrations/` — schema, RLS and database functions
+
+## Leaderboards and awards
+
+- Each group has a monthly and a yearly leaderboard ranked by net WuCoins won on bets settled in that period (`period_standings`). A bet counts in the period it settles, so stakes and payouts never split across months.
+- `awards` lists the winner of every finished month (🏅) and year (🏆). Ties share the award; a winner must finish positive. Awards are derived from the ledger, so nothing needs to run at month end.
+- Periods use the database clock (UTC).
