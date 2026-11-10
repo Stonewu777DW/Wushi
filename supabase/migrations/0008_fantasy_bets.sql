@@ -113,6 +113,7 @@ begin
     result := case when margin > 0 then 'won' when margin = 0 then 'push' else 'lost' end;
 
     update fantasy_bets set status = result, settled_at = now() where id = b.id;
+    insert into settlements (ref_id) values (b.id); -- feeds settled_results (migration 0006)
 
     if result = 'won' then
       insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
