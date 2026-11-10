@@ -6,6 +6,7 @@ import { useSession } from '../lib/session';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../lib/types';
 import { ui } from '../lib/ui';
+import { YahooFantasy } from '../lib/YahooFantasy';
 
 export default function ProfileScreen() {
   const { session } = useSession();
@@ -57,6 +58,7 @@ export default function ProfileScreen() {
         <Text style={ui.buttonText}>Save</Text>
       </Pressable>
       {status && <Text style={ui.muted}>{status}</Text>}
+      <YahooFantasy userId={userId} />
       <Pressable onPress={() => supabase.auth.signOut()}>
         <Text style={ui.muted}>Sign out</Text>
       </Pressable>

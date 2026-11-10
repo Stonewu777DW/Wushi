@@ -3,13 +3,15 @@ import { FlatList, Share, Pressable, Text, View } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { Avatar } from '../../lib/Avatar';
-import type { Group, Profile, Standing } from '../../lib/types';
+import type { FantasyTeam, Group, Profile, Standing } from '../../lib/types';
+import { record } from '../../lib/YahooFantasy';
 import { ui } from '../../lib/ui';
 
 export default function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [group, setGroup] = useState<Group | null>(null);
   const [standings, setStandings] = useState<Standing[]>([]);
+  const [teams, setTeams] = useState<Map<string, FantasyTeam>>(new Map());
 
   const load = useCallback(() => {
     supabase.from('groups').select('*').eq('id', id).single<Group>().then(({ data }) => setGroup(data));
@@ -28,6 +30,8 @@ export default function GroupScreen() {
         };
       });
       setStandings(rows.sort((a, b) => b.balance - a.balance));
+      supabase.from('fantasy_teams').select('*').in('user_id', rows.map((r) => r.user_id))
+        .then(({ data }) => setTeams(new Map((data ?? []).map((t) => [t.user_id, t]))));
     });
   }, [id]);
   useFocusEffect(load);
@@ -49,7 +53,12 @@ export default function GroupScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Text>{index + 1}.</Text>
               <Avatar url={item.avatar_url} name={item.name} size={32} />
-              <Text>{item.name}</Text>
+              <View>
+                <Text>{item.name}</Text>
+                {teams.has(item.user_id) && (
+                  <Text style={ui.muted}>{teams.get(item.user_id)!.team_name} · {record(teams.get(item.user_id)!)}</Text>
+                )}
+              </View>
             </View>
             <Text>{item.balance} WC</Text>
           </View>
