@@ -1,6 +1,10 @@
 -- Friendly bets: a member (the maker) sets a two-sided line about something or someone in the group.
--- Everyone else bets even money on a side. The maker is the bookie: they cover the gap if the heavier
--- side wins, keep the gap if the lighter side wins, and earn a bonus for a balanced line.
+-- Everyone else bets even money on a side (winners get 2x their stake back).
+-- The maker is judged on the line:
+--   * one-sided (80%+ of the coins on the winning side): the maker pays the gap, winners' payout minus losers' stakes;
+--   * 40%+ of the coins on the losing side: the maker earns a bonus;
+--   * in between: nothing. The app covers any shortfall and keeps any surplus.
+-- If the maker picks app_banks, the app is the bookie: the maker is never punished and holds no escrow.
 -- Every ledger entry written here sets ref_id = bet id.
 
 create type bet_side as enum ('a', 'b');
@@ -18,6 +22,7 @@ create table friendly_bets (
   closes_at timestamptz not null, -- betting stops here; the maker resolves afterwards
   status bet_status not null default 'open',
   winning_side bet_side,
+  app_banks boolean not null default false, -- the app, not the maker, backs the bet
   significance bet_significance not null, -- chosen by the maker
   reward_multiplier int not null check (reward_multiplier >= 1), -- significance x duration, fixed at creation
   min_wager int not null, -- scales with the multiplier: bigger, longer bets demand more and allow more
@@ -84,7 +89,7 @@ $$;
 
 create function create_friendly_bet(
   p_group_id uuid, p_title text, p_side_a text, p_side_b text, p_subject_id uuid, p_closes_at timestamptz,
-  p_significance bet_significance
+  p_significance bet_significance, p_app_banks boolean default false
 ) returns friendly_bets
 language plpgsql security definer set search_path = public as $$
 declare b friendly_bets; m int;
@@ -95,8 +100,8 @@ begin
   end if;
   if p_closes_at <= now() then raise exception 'Closing time must be in the future'; end if;
   m := reward_multiplier_for(p_significance, p_closes_at);
-  insert into friendly_bets (group_id, maker_id, subject_id, title, side_a, side_b, closes_at, significance, reward_multiplier, min_wager, max_wager)
-  values (p_group_id, auth.uid(), p_subject_id, p_title, p_side_a, p_side_b, p_closes_at, p_significance, m, 10 * m, 50 * m)
+  insert into friendly_bets (group_id, maker_id, subject_id, title, side_a, side_b, closes_at, significance, app_banks, reward_multiplier, min_wager, max_wager)
+  values (p_group_id, auth.uid(), p_subject_id, p_title, p_side_a, p_side_b, p_closes_at, p_significance, p_app_banks, m, 10 * m, 50 * m)
   returning * into b;
   return b;
 end $$;
@@ -122,10 +127,11 @@ begin
   insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
   values (b.group_id, auth.uid(), -p_amount, 'bet_stake', b.id);
 
-  -- Maker's worst case is the gap between the two pools: hold exactly that.
+  -- Maker's worst case: if one side holds 80%+ of the coins and wins, the maker pays the gap. Hold that.
   select coalesce(sum(amount) filter (where side = 'a'), 0), coalesce(sum(amount) filter (where side = 'b'), 0)
     into pool_a, pool_b from friendly_wagers where bet_id = b.id;
-  needed := abs(pool_a - pool_b);
+  needed := case when not b.app_banks and greatest(pool_a, pool_b) * 10 >= (pool_a + pool_b) * 8
+                 then abs(pool_a - pool_b) else 0 end;
   if needed > b.escrow_held then
     if balance_of(b.group_id, b.maker_id) < needed - b.escrow_held then
       raise exception 'The maker cannot cover this wager yet';
@@ -166,9 +172,13 @@ begin
 
   select coalesce(sum(amount) filter (where side = winner), 0), coalesce(sum(amount) filter (where side <> winner), 0)
     into won, lost from friendly_wagers where bet_id = b.id;
-  -- Maker keeps the gap if the lighter side won, pays it if the heavier side won,
-  -- plus a bonus of 10% of the matched volume (the smaller pool) times the bet's multiplier.
-  reward := (lost - won) + (least(won, lost) / 10) * b.reward_multiplier;
+  reward := 0;
+  if not b.app_banks and won * 10 >= (won + lost) * 8 then
+    reward := lost - won; -- one-sided line: the maker pays the gap
+  end if;
+  if lost * 10 >= (won + lost) * 4 then
+    reward := reward + (least(won, lost) / 10) * b.reward_multiplier; -- 10% of the matched volume x multiplier
+  end if;
   if reward <> 0 then
     insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
     values (b.group_id, b.maker_id, reward, 'maker_settlement', b.id);
@@ -203,3 +213,17 @@ end $$;
 -- Internal helpers are not callable from the API.
 revoke execute on function settle_friendly_bet, lock_members, balance_of, reward_multiplier_for from public, anon, authenticated;
 revoke execute on function create_friendly_bet, place_friendly_wager, resolve_friendly_bet, cancel_friendly_bet from anon;
+
+-- A friendly bet with no payout and no maker settlement (everyone lost) still counts as settled for leaderboards.
+create or replace view settled_results with (security_invoker = true) as
+  with settled as (
+    select ref_id, max(created_at) as settled_at
+    from ledger_entries
+    where ref_id is not null
+    group by ref_id
+    having bool_or(reason in ('bet_payout', 'bet_refund', 'maker_settlement'))
+      or ref_id in (select id from friendly_bets where status <> 'open')
+  )
+  select l.group_id, l.user_id, l.amount, s.settled_at
+  from ledger_entries l
+  join settled s using (ref_id);
