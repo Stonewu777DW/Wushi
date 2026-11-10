@@ -6,12 +6,12 @@
     <title>%WEB_TITLE%</title>
     <!-- Installable web app: "Add to Home Screen" opens Wushi full screen, with no app store. -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0f3d2e" />
+    <meta name="theme-color" content="#000000" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Wushi" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       html,
@@ -20,6 +20,7 @@
       }
       body {
         overflow: hidden;
+        background-color: #000000;
       }
       #root {
         display: flex;

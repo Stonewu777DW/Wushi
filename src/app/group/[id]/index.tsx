@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Share, Pressable, Text, View } from 'react-native';
+import { FlatList, Share, Pressable, View } from 'react-native';
+import { Text } from '../../../lib/Text';
 import { Link, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { Avatar } from '../../../lib/Avatar';
 import type { Award, FantasyTeam, Group, Profile, Standing } from '../../../lib/types';
 import { record } from '../../../lib/YahooFantasy';
+import { SPORTS } from '../../../lib/sports';
 import { ui } from '../../../lib/ui';
+import { WuCoin } from '../../../lib/WuCoin';
 
 type Period = 'month' | 'year' | 'all';
 const PERIODS: { key: Period; label: string }[] = [
@@ -86,23 +89,25 @@ export default function GroupScreen() {
   return (
     <View style={ui.screen}>
       <Stack.Screen options={{ title: group.name }} />
-      <Pressable style={ui.button} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
-        <Text style={ui.buttonText}>Invite friends ({group.invite_code})</Text>
+      <Pressable style={ui.buttonOutline} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
+        <Text style={ui.buttonOutlineText}>Invite friends ({group.invite_code})</Text>
       </Pressable>
-      <Link href={`/group/${id}/nfl`} asChild>
-        <Pressable style={ui.button}>
-          <Text style={ui.buttonText}>Bet on NFL this week</Text>
-        </Pressable>
-      </Link>
+      {SPORTS.map((s) => (
+        <Link key={s.key} href={`/group/${id}/${s.key}`} asChild>
+          <Pressable style={ui.button}>
+            <Text style={ui.buttonText}>Bet on {s.label}</Text>
+          </Pressable>
+        </Link>
+      ))}
       <Text style={ui.title}>Leaderboard</Text>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {PERIODS.map((p) => (
           <Pressable
             key={p.key}
             onPress={() => setPeriod(p.key)}
-            style={[ui.chip, period === p.key && ui.chipActive]}
+            style={[ui.pill, period === p.key && ui.pillActive]}
           >
-            <Text style={period === p.key ? { color: '#fff' } : undefined}>{p.label}</Text>
+            <Text style={period === p.key ? ui.pillActiveText : undefined}>{p.label}</Text>
           </Pressable>
         ))}
       </View>
@@ -113,7 +118,7 @@ export default function GroupScreen() {
         renderItem={({ item, index }) => (
           <View style={[ui.row, { alignItems: 'center' }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text>{index + 1}.</Text>
+              <Text style={ui.muted}>{index + 1}.</Text>
               <Avatar url={item.avatar_url} name={item.name} size={32} />
               <View>
                 <Text>{item.name}</Text>
@@ -123,10 +128,7 @@ export default function GroupScreen() {
               </View>
               <Text>{trophies(item.user_id)}</Text>
             </View>
-            <Text>
-              {period !== 'all' && item.balance > 0 ? '+' : ''}
-              {item.balance} WC
-            </Text>
+            <WuCoin amount={item.balance} size={18} signed={period !== 'all'} />
           </View>
         )}
         ListFooterComponent={
@@ -138,9 +140,10 @@ export default function GroupScreen() {
                   <Text style={a.kind === 'year' ? { fontWeight: '700' } : undefined}>
                     {a.kind === 'year' ? '🏆' : '🏅'} {awardLabel(a)}
                   </Text>
-                  <Text>
-                    {nameOf.get(a.user_id)} (+{a.net})
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text>{nameOf.get(a.user_id)}</Text>
+                    <WuCoin amount={a.net} size={16} signed />
+                  </View>
                 </View>
               ))}
             </View>

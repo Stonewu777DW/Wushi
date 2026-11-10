@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
+import { Text } from './Text';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from './supabase';
@@ -50,7 +51,7 @@ export function YahooFantasy({ userId }: { userId: string }) {
         </View>
       ))}
       <Pressable onPress={teams.length ? refresh : link}>
-        <Text style={ui.muted}>{teams.length ? 'Refresh teams' : 'Link Yahoo Fantasy team'}</Text>
+        <Text style={ui.link}>{teams.length ? 'Refresh teams' : 'Link Yahoo Fantasy team'}</Text>
       </Pressable>
       {status && <Text style={ui.muted}>{status}</Text>}
     </View>

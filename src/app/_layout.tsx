@@ -1,13 +1,15 @@
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { SessionProvider, useSession } from '../lib/session';
+import { colors, navTheme } from '../lib/ui';
 
 function RootStack() {
   const { session, loading } = useSession();
   if (loading) return null;
 
   return (
-    <Stack>
+    <Stack screenOptions={{ headerTitleStyle: { fontWeight: '700' } }}>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="sign-in" options={{ title: 'Wushi' }} />
       </Stack.Protected>
@@ -15,7 +17,7 @@ function RootStack() {
         <Stack.Screen name="index" options={{ title: 'Your groups' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="group/[id]/index" options={{ title: 'Group' }} />
-        <Stack.Screen name="group/[id]/nfl" options={{ title: 'NFL this week' }} />
+        <Stack.Screen name="group/[id]/[sport]" options={{ title: 'Sports bets' }} />
       </Stack.Protected>
     </Stack>
   );
@@ -24,12 +26,15 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <SessionProvider>
-      {/* Phone-width column, so the web build looks like the app on a wide screen. */}
-      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#e5e5e5' }}>
-        <View style={{ flex: 1, width: '100%', maxWidth: 430 }}>
-          <RootStack />
+      <ThemeProvider value={navTheme}>
+        <StatusBar style="light" />
+        {/* Phone-width column, so the web build looks like the app on a wide screen. */}
+        <View style={{ flex: 1, alignItems: 'center', backgroundColor: colors.surface }}>
+          <View style={{ flex: 1, width: '100%', maxWidth: 430, backgroundColor: colors.bg }}>
+            <RootStack />
+          </View>
         </View>
-      </View>
+      </ThemeProvider>
     </SessionProvider>
   );
 }
