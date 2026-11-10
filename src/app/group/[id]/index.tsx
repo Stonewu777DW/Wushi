@@ -3,7 +3,8 @@ import { FlatList, Share, Pressable, Text, View } from 'react-native';
 import { Link, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { Avatar } from '../../../lib/Avatar';
-import type { Award, Group, Profile, Standing } from '../../../lib/types';
+import type { Award, FantasyTeam, Group, Profile, Standing } from '../../../lib/types';
+import { record } from '../../../lib/YahooFantasy';
 import { ui } from '../../../lib/ui';
 
 type Period = 'month' | 'year' | 'all';
@@ -39,6 +40,7 @@ export default function GroupScreen() {
   const [group, setGroup] = useState<Group | null>(null);
   const [period, setPeriod] = useState<Period>('month');
   const [standings, setStandings] = useState<Standing[]>([]);
+  const [teams, setTeams] = useState<Map<string, FantasyTeam>>(new Map());
   const [awards, setAwards] = useState<Award[]>([]);
 
   const load = useCallback(() => {
@@ -65,6 +67,8 @@ export default function GroupScreen() {
         };
       });
       setStandings(rows.sort((a, b) => b.balance - a.balance));
+      supabase.from('fantasy_teams').select('*').in('user_id', rows.map((r) => r.user_id))
+        .then(({ data }) => setTeams(new Map((data ?? []).map((t) => [t.user_id, t]))));
     });
   }, [id, period]);
   useFocusEffect(load);
@@ -111,7 +115,12 @@ export default function GroupScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <Text>{index + 1}.</Text>
               <Avatar url={item.avatar_url} name={item.name} size={32} />
-              <Text>{item.name}</Text>
+              <View>
+                <Text>{item.name}</Text>
+                {teams.has(item.user_id) && (
+                  <Text style={ui.muted}>{teams.get(item.user_id)!.team_name} · {record(teams.get(item.user_id)!)}</Text>
+                )}
+              </View>
               <Text>{trophies(item.user_id)}</Text>
             </View>
             <Text>

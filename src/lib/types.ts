@@ -48,3 +48,17 @@ export type SportsBet = {
   created_at: string;
   games: Pick<Game, 'home_team' | 'away_team'>;
 };
+
+export type FantasyTeam = {
+  team_key: string;
+  user_id: string;
+  team_name: string;
+  league_name: string;
+  logo_url: string | null;
+  wins: number;
+  losses: number;
+  ties: number;
+  rank: number | null;
+  points_for: number;
+  synced_at: string;
+};
