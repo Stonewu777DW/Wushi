@@ -99,6 +99,9 @@ begin
     raise exception 'Subject is not in this group';
   end if;
   if p_closes_at <= now() then raise exception 'Closing time must be in the future'; end if;
+  if (select count(*) from friendly_bets where group_id = p_group_id and maker_id = auth.uid() and status = 'open') >= 3 then
+    raise exception 'You already have 3 open bets in this group';
+  end if;
   m := reward_multiplier_for(p_significance, p_closes_at);
   insert into friendly_bets (group_id, maker_id, subject_id, title, side_a, side_b, closes_at, significance, app_banks, reward_multiplier, min_wager, max_wager)
   values (p_group_id, auth.uid(), p_subject_id, p_title, p_side_a, p_side_b, p_closes_at, p_significance, p_app_banks, m, 10 * m, 50 * m)
