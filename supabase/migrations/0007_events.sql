@@ -123,15 +123,17 @@ begin
   insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
     select e.group_id, user_id, e.buy_in, 'event_refund', e.id from event_players where event_id = e.id;
   update events set status = 'cancelled' where id = e.id;
+  insert into settlements (ref_id) values (e.id);
 end $$;
 
--- Shared by the three completion paths: pays out event_players.payout and closes the event.
+-- Shared by the completion paths: pays out event_players.payout and closes the event.
 create function pay_out_event(e events) returns void
 language sql security definer set search_path = public as $$
   insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
     select e.group_id, user_id, payout, 'event_payout', e.id
     from event_players where event_id = e.id and payout > 0;
   update events set status = 'completed', completed_at = now() where id = e.id;
+  insert into settlements (ref_id) values (e.id);
 $$;
 revoke execute on function pay_out_event from public, anon, authenticated;
 
@@ -265,17 +267,3 @@ $$;
 
 revoke execute on function create_event, join_event, leave_event, cancel_event, complete_event, set_poker_chips,
   complete_poker_event, record_golf_round, golf_handicap, golf_event_standings from anon;
-
--- Count events in the leaderboards: an event is settled once it pays out or refunds.
--- Compared as text because a new enum value can't be used in the transaction that adds it.
-create or replace view settled_results with (security_invoker = true) as
-  with settled as (
-    select ref_id, max(created_at) as settled_at
-    from ledger_entries
-    where ref_id is not null
-    group by ref_id
-    having bool_or(reason::text in ('bet_payout', 'bet_refund', 'maker_settlement', 'event_payout', 'event_refund'))
-  )
-  select l.group_id, l.user_id, l.amount, s.settled_at
-  from ledger_entries l
-  join settled s using (ref_id);
