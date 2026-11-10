@@ -4,6 +4,7 @@
 -- Every ledger entry written here sets ref_id = bet id.
 
 create type bet_side as enum ('a', 'b');
+create type bet_significance as enum ('small', 'medium', 'big');
 create type bet_status as enum ('open', 'resolved', 'cancelled');
 
 create table friendly_bets (
@@ -17,7 +18,10 @@ create table friendly_bets (
   closes_at timestamptz not null, -- betting stops here; the maker resolves afterwards
   status bet_status not null default 'open',
   winning_side bet_side,
-  reward_multiplier int not null check (reward_multiplier >= 1), -- set at creation from how far off closes_at is
+  significance bet_significance not null, -- chosen by the maker
+  reward_multiplier int not null check (reward_multiplier >= 1), -- significance x duration, fixed at creation
+  min_wager int not null, -- scales with the multiplier: bigger, longer bets demand more and allow more
+  max_wager int not null,
   escrow_held int not null default 0, -- maker's worst-case payout, held from their balance while open
   maker_reward int, -- coins credited (+) or charged (-) to the maker at settlement
   created_at timestamptz not null default now(),
@@ -67,29 +71,32 @@ language sql stable security definer set search_path = public as $$
   select coalesce(sum(amount), 0)::int from ledger_entries where group_id = g and user_id = u;
 $$;
 
--- Longer bets pay the maker's bonus more: <1 day 1x, <1 week 2x, <1 month 3x, longer 5x.
-create function reward_multiplier_for(closes timestamptz) returns int
-language sql immutable as $$
-  select case
+-- Multiplier = significance (small 1x, medium 2x, big 3x) x duration (<1 day 1x, <1 week 2x, <1 month 3x, longer 5x).
+-- It scales the maker's bonus and the wager limits: min 10 x multiplier, max 50 x multiplier.
+create function reward_multiplier_for(sig bet_significance, closes timestamptz) returns int
+language sql stable as $$
+  select (case sig when 'small' then 1 when 'medium' then 2 else 3 end) * (case
     when closes - now() < interval '1 day' then 1
     when closes - now() < interval '7 days' then 2
     when closes - now() < interval '30 days' then 3
-    else 5 end;
+    else 5 end);
 $$;
 
 create function create_friendly_bet(
-  p_group_id uuid, p_title text, p_side_a text, p_side_b text, p_subject_id uuid, p_closes_at timestamptz
+  p_group_id uuid, p_title text, p_side_a text, p_side_b text, p_subject_id uuid, p_closes_at timestamptz,
+  p_significance bet_significance
 ) returns friendly_bets
 language plpgsql security definer set search_path = public as $$
-declare b friendly_bets;
+declare b friendly_bets; m int;
 begin
   if not is_member(p_group_id) then raise exception 'Not a member of this group'; end if;
   if p_subject_id is not null and not exists (select 1 from group_members where group_id = p_group_id and user_id = p_subject_id) then
     raise exception 'Subject is not in this group';
   end if;
   if p_closes_at <= now() then raise exception 'Closing time must be in the future'; end if;
-  insert into friendly_bets (group_id, maker_id, subject_id, title, side_a, side_b, closes_at, reward_multiplier)
-  values (p_group_id, auth.uid(), p_subject_id, p_title, p_side_a, p_side_b, p_closes_at, reward_multiplier_for(p_closes_at))
+  m := reward_multiplier_for(p_significance, p_closes_at);
+  insert into friendly_bets (group_id, maker_id, subject_id, title, side_a, side_b, closes_at, significance, reward_multiplier, min_wager, max_wager)
+  values (p_group_id, auth.uid(), p_subject_id, p_title, p_side_a, p_side_b, p_closes_at, p_significance, m, 10 * m, 50 * m)
   returning * into b;
   return b;
 end $$;
@@ -105,6 +112,9 @@ begin
   if b.id is null or not is_member(b.group_id) then raise exception 'Bet not found'; end if;
   if b.status <> 'open' or b.closes_at <= now() then raise exception 'Betting is closed'; end if;
   if auth.uid() in (b.maker_id, b.subject_id) then raise exception 'The maker and the subject cannot bet'; end if;
+  if p_amount < b.min_wager or p_amount > b.max_wager then
+    raise exception 'Wager must be between % and % WuCoins', b.min_wager, b.max_wager;
+  end if;
   perform lock_members(b.group_id, auth.uid(), b.maker_id);
 
   if balance_of(b.group_id, auth.uid()) < p_amount then raise exception 'Not enough WuCoins'; end if;

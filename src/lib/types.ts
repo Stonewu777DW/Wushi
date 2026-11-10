@@ -76,7 +76,10 @@ export type FriendlyBet = {
   closes_at: string;
   status: 'open' | 'resolved' | 'cancelled';
   winning_side: BetSide | null;
+  significance: 'small' | 'medium' | 'big';
   reward_multiplier: number;
+  min_wager: number;
+  max_wager: number;
   escrow_held: number;
   maker_reward: number | null;
   created_at: string;
