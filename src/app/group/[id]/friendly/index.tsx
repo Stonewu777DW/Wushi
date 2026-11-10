@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
+import { Text } from '../../../../lib/Text';
 import { Link, router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { listBets, listMembers, timeLeft } from '../../../../lib/friendlyBets';
 import type { FriendlyBet } from '../../../../lib/types';
@@ -36,7 +37,7 @@ export default function FriendlyBetsScreen() {
         renderItem={({ item }) => (
           <Link href={`/group/${groupId}/friendly/${item.id}`} asChild>
             <Pressable style={ui.card}>
-              <Text style={[ui.text, { fontWeight: '700' }]}>{item.title}</Text>
+              <Text style={[{ fontWeight: '700' }]}>{item.title}</Text>
               <Text style={ui.muted}>
                 {item.side_a} vs {item.side_b} · line by {names.get(item.maker_id) ?? '…'}
               </Text>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Text } from '../../../../lib/Text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { createBet, listMembers, type Member } from '../../../../lib/friendlyBets';
 import { useSession } from '../../../../lib/session';
@@ -23,7 +24,7 @@ const SIGNIFICANCE: { label: string; value: FriendlyBet['significance'] }[] = [
 function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={[ui.pill, selected && ui.pillActive]}>
-      <Text style={selected ? ui.pillActiveText : ui.text}>{label}</Text>
+      <Text style={selected ? ui.pillActiveText : undefined}>{label}</Text>
     </Pressable>
   );
 }
@@ -74,7 +75,7 @@ export default function NewFriendlyBet() {
         <TextInput style={[ui.input, { flex: 1, minWidth: 0 }]} placeholderTextColor={placeholder} placeholder="Side B" value={sideB} onChangeText={setSideB} maxLength={30} />
       </View>
 
-      <Text style={ui.text}>Who is it about?</Text>
+      <Text>Who is it about?</Text>
       <Text style={ui.muted}>They won't see this bet until it's resolved, and can't bet on it.</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         <Chip label="No one" selected={subjectId === null} onPress={() => setSubjectId(null)} />
@@ -83,14 +84,14 @@ export default function NewFriendlyBet() {
         ))}
       </View>
 
-      <Text style={ui.text}>Betting closes in</Text>
+      <Text>Betting closes in</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {DURATIONS.map((d) => (
           <Chip key={d.label} label={d.label} selected={d === duration} onPress={() => setDuration(d)} />
         ))}
       </View>
 
-      <Text style={ui.text}>How big a deal is it?</Text>
+      <Text>How big a deal is it?</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {SIGNIFICANCE.map((x) => (
           <Chip key={x.value} label={x.label} selected={x.value === significance} onPress={() => setSignificance(x.value)} />

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Text } from '../../../../lib/Text';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { cancelBet, getBet, listMembers, listWagers, placeWager, resolveBet, timeLeft } from '../../../../lib/friendlyBets';
 import type { BetSide as Side, FriendlyBet, FriendlyWager as Wager } from '../../../../lib/types';
@@ -85,7 +86,7 @@ export default function FriendlyBetScreen() {
           const share = pot ? Math.round((total(s) / pot) * 100) : 50;
           return (
             <View key={s} style={[ui.card, { flex: 1 }, won && { borderColor: colors.accent }]}>
-              <Text style={[ui.text, { fontWeight: '700' }, won && { color: colors.accent }]}>
+              <Text style={[{ fontWeight: '700' }, won && { color: colors.accent }]}>
                 {label(s)}
                 {won && ' ✓'}
               </Text>
@@ -98,7 +99,7 @@ export default function FriendlyBetScreen() {
 
       {bet.status === 'resolved' && bet.maker_reward !== null && (
         <View style={[ui.card, { borderColor: bet.maker_reward >= 0 ? colors.accent : colors.danger }]}>
-          <Text style={ui.text}>
+          <Text>
             {name(bet.maker_id)} {bet.maker_reward >= 0 ? 'earned' : 'paid'} for {isMaker ? 'your' : 'this'} line
           </Text>
           <WuCoin amount={Math.abs(bet.maker_reward)} size={22} />
@@ -108,7 +109,7 @@ export default function FriendlyBetScreen() {
 
       {bettingOpen && !isMaker && bet.subject_id !== me && (
         <View style={ui.card}>
-          <Text style={ui.text}>Place a bet</Text>
+          <Text>Place a bet</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Text style={ui.muted}>Stake</Text>
             <WuCoin amount={bet.min_wager} size={16} />
@@ -138,7 +139,7 @@ export default function FriendlyBetScreen() {
 
       {isMaker && bettingOpen && (
         <View style={ui.card}>
-          <Text style={ui.text}>Your line</Text>
+          <Text>Your line</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Text style={ui.muted}>Held to cover the gap</Text>
             <WuCoin amount={bet.escrow_held} size={16} />
@@ -153,7 +154,7 @@ export default function FriendlyBetScreen() {
 
       {isMaker && isOpen && !bettingOpen && (
         <View style={ui.card}>
-          <Text style={ui.text}>Settle your line</Text>
+          <Text>Settle your line</Text>
           <Text style={ui.muted}>Pick the side that won. Winners are paid and your reward is settled.</Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {(['a', 'b'] as const).map((s) => (
@@ -167,11 +168,11 @@ export default function FriendlyBetScreen() {
 
       {error && <Text style={ui.error}>{error}</Text>}
 
-      <Text style={[ui.text, { fontWeight: '700', marginTop: 4 }]}>Bets</Text>
+      <Text style={[{ fontWeight: '700', marginTop: 4 }]}>Bets</Text>
       {wagers.length === 0 && <Text style={ui.muted}>No bets yet.</Text>}
       {wagers.map((w) => (
         <View key={w.id} style={[ui.row, { alignItems: 'center' }]}>
-          <Text style={ui.text}>
+          <Text>
             {name(w.user_id)} · {label(w.side)}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
