@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { FlatList, Share, Pressable, Text, View } from 'react-native';
-import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { Avatar } from '../../lib/Avatar';
-import type { Group, Profile, Standing } from '../../lib/types';
-import { ui } from '../../lib/ui';
+import { Link, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { supabase } from '../../../lib/supabase';
+import { Avatar } from '../../../lib/Avatar';
+import type { Group, Profile, Standing } from '../../../lib/types';
+import { ui } from '../../../lib/ui';
 
 export default function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,6 +40,11 @@ export default function GroupScreen() {
       <Pressable style={ui.button} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
         <Text style={ui.buttonText}>Invite friends ({group.invite_code})</Text>
       </Pressable>
+      <Link href={`/group/${id}/nfl`} asChild>
+        <Pressable style={ui.button}>
+          <Text style={ui.buttonText}>Bet on NFL this week</Text>
+        </Pressable>
+      </Link>
       <Text style={ui.title}>Standings</Text>
       <FlatList
         data={standings}
