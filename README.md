@@ -4,7 +4,7 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 
 ## Setup
 
-1. Create a Supabase project. Under Authentication > Sign In / Providers > Email, turn off "Confirm email" (the app uses email + password, so no emails are sent).
+1. Create a Supabase project. Under Authentication > Sign In / Providers > Email, turn off "Confirm email". Accounts are username + password; the app maps each username to a placeholder email that never receives mail.
 2. Run `supabase/migrations/*.sql` in order (SQL editor, or `supabase db push`). `0002` creates the public `avatars` storage bucket.
 3. `cp .env.example .env` (it already points at the shared Supabase project).
 4. `npm install && npx expo start`

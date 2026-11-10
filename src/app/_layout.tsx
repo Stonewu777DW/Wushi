@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { SessionProvider, useSession } from '../lib/session';
 
 function RootStack() {
-  const { session, username, loading } = useSession();
+  const { session, loading } = useSession();
   if (loading) return null;
 
   return (
@@ -11,10 +11,7 @@ function RootStack() {
       <Stack.Protected guard={!session}>
         <Stack.Screen name="sign-in" options={{ title: 'Wushi' }} />
       </Stack.Protected>
-      <Stack.Protected guard={!!session && !username}>
-        <Stack.Screen name="username" options={{ title: 'Pick a username' }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!!session && !!username}>
+      <Stack.Protected guard={!!session}>
         <Stack.Screen name="index" options={{ title: 'Your groups' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="group/[id]" options={{ title: 'Group' }} />

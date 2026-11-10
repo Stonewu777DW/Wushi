@@ -3,37 +3,45 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { ui } from '../lib/ui';
 
-// Email + password. "Confirm email" is off in Supabase, so sign-up signs you straight in and no email is sent.
+// Username + password only. Supabase Auth needs an email, so each username maps to an
+// address nobody receives mail at. "Confirm email" is off, so no email is ever sent.
+const loginEmail = (username: string) => `${username.toLowerCase()}@users.wushi.app`;
+const USERNAME = /^[a-zA-Z0-9_]{3,20}$/;
+
 export default function SignIn() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Supabase reads an empty email as an anonymous sign-in, which gives a confusing error.
-  function filledIn() {
-    if (email.trim() && password) return true;
-    setError('Enter your email and a password.');
-    return false;
+  function check() {
+    if (!USERNAME.test(username.trim())) return 'Username: 3 to 20 letters, numbers or underscores.';
+    if (password.length < 6) return 'Password: at least 6 characters.';
+    return null;
   }
 
   async function signIn() {
-    if (!filledIn()) return;
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setError(error?.message ?? null);
+    const problem = check();
+    if (problem) return setError(problem);
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail(username.trim()), password });
+    setError(error ? 'Wrong username or password.' : null);
   }
 
   async function signUp() {
-    if (!filledIn()) return;
-    const { error } = await supabase.auth.signUp({ email: email.trim(), password });
-    setError(error?.message ?? null);
+    const problem = check();
+    if (problem) return setError(problem);
+    const name = username.trim();
+    // A database trigger creates the profile from this username.
+    const { error } = await supabase.auth.signUp({ email: loginEmail(name), password, options: { data: { username: name } } });
+    setError(error ? (error.code === 'user_already_exists' ? 'That username is taken.' : error.message) : null);
   }
 
   return (
     <View style={ui.screen}>
-      <Text style={ui.title}>Sign in</Text>
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="you@email.com" autoCapitalize="none" keyboardType="email-address"
-        value={email} onChangeText={setEmail} />
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Password (6+ characters)" secureTextEntry value={password} onChangeText={setPassword} />
+      <Text style={ui.title}>Wushi</Text>
+      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Username" autoCapitalize="none" autoCorrect={false}
+        value={username} onChangeText={setUsername} />
+      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Password (6+ characters)" secureTextEntry
+        value={password} onChangeText={setPassword} />
       <Pressable style={ui.button} onPress={signIn}>
         <Text style={ui.buttonText}>Sign in</Text>
       </Pressable>
