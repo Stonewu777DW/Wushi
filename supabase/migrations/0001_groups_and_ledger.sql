@@ -11,6 +11,18 @@ create table profiles (
   created_at timestamptz not null default now()
 );
 
+-- Accounts are username + password. Sign-up passes the username in user metadata and
+-- the profile is created together with the account (a taken or invalid username fails sign-up).
+create function create_profile_for_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into profiles (id, username) values (new.id, new.raw_user_meta_data ->> 'username');
+  return new;
+end $$;
+
+create trigger create_profile after insert on auth.users
+  for each row execute function create_profile_for_new_user();
+
 create table groups (
   id uuid primary key default gen_random_uuid(),
   name text not null check (length(name) between 1 and 40),
@@ -57,7 +69,6 @@ alter table group_members enable row level security;
 alter table ledger_entries enable row level security;
 
 create policy "profiles readable by signed-in users" on profiles for select to authenticated using (true);
-create policy "create own profile" on profiles for insert to authenticated with check (id = auth.uid());
 create policy "update own profile" on profiles for update to authenticated using (id = auth.uid());
 
 create policy "members read group" on groups for select to authenticated using (is_member(id));

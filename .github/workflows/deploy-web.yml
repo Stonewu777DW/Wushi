@@ -1,0 +1,28 @@
+# Builds the web app and deploys it to Expo Hosting.
+# Pull requests get their own preview link; main is the link friends use.
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      # Public values: the publishable key is meant to ship in the app.
+      EXPO_PUBLIC_SUPABASE_URL: https://dyqqwhckqarqnxeyjyss.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_EvJMZpB2tiNZa1fLxc98cQ_vXJ0za0D
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx expo export --platform web
+      - run: npx eas-cli@latest init --non-interactive --force
+      # PR #N stays at https://wushi--pr-N.expo.app; main is https://wushi.expo.app
+      - run: npx eas-cli@latest deploy --non-interactive --dev-domain wushi ${{ github.event_name == 'pull_request' && format('--alias pr-{0}', github.event.number) || '--prod' }}

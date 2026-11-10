@@ -50,9 +50,9 @@ export default function ProfileScreen() {
         <Text style={ui.muted}>Change photo</Text>
       </Pressable>
       <Text style={ui.muted}>@{profile.username}</Text>
-      <TextInput style={ui.input} placeholder="Display name" value={profile.display_name ?? ''}
+      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Display name" value={profile.display_name ?? ''}
         onChangeText={(display_name) => setProfile({ ...profile, display_name })} maxLength={40} />
-      <TextInput style={[ui.input, { minHeight: 80 }]} placeholder="Bio" multiline value={profile.bio ?? ''}
+      <TextInput style={[ui.input, { minHeight: 80 }]} placeholderTextColor="#999" placeholder="Bio" multiline value={profile.bio ?? ''}
         onChangeText={(bio) => setProfile({ ...profile, bio })} maxLength={160} />
       <Pressable style={ui.button} onPress={save}>
         <Text style={ui.buttonText}>Save</Text>

@@ -2,37 +2,28 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
-type SessionState = {
-  session: Session | null;
-  username: string | null;
-  loading: boolean;
-  setUsername: (name: string) => void;
-};
+type SessionState = { session: Session | null; loading: boolean };
 
 const SessionContext = createContext<SessionState | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<SessionState>({ session: null, loading: true });
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(async (_event, next) => {
-      setSession(next);
-      if (next) {
-        const { data: profile } = await supabase.from('profiles').select('username').eq('id', next.user.id).maybeSingle();
-        setUsername(profile?.username ?? null);
-      } else {
-        setUsername(null);
+    async function update(session: Session | null) {
+      // A session whose account has no profile (deleted or reset account) can't use the app: sign it out.
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+        if (!profile) return void supabase.auth.signOut();
       }
-      setLoading(false);
-    });
+      setState({ session, loading: false });
+    }
+    // Deferred: awaiting Supabase calls inside this callback can deadlock the auth client.
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => void setTimeout(() => update(session)));
     return () => data.subscription.unsubscribe();
   }, []);
 
-  return (
-    <SessionContext.Provider value={{ session, username, loading, setUsername }}>{children}</SessionContext.Provider>
-  );
+  return <SessionContext.Provider value={state}>{children}</SessionContext.Provider>;
 }
 
 export function useSession() {
