@@ -10,7 +10,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SessionState>({ session: null, loading: true });
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setState({ session, loading: false }));
+    async function update(session: Session | null) {
+      // A session whose account has no profile (deleted or reset account) can't use the app: sign it out.
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+        if (!profile) return void supabase.auth.signOut();
+      }
+      setState({ session, loading: false });
+    }
+    // Deferred: awaiting Supabase calls inside this callback can deadlock the auth client.
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => void setTimeout(() => update(session)));
     return () => data.subscription.unsubscribe();
   }, []);
 
