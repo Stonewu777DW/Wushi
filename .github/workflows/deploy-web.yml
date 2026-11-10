@@ -16,8 +16,8 @@ jobs:
       EXPO_PUBLIC_SUPABASE_URL: https://dyqqwhckqarqnxeyjyss.supabase.co
       EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_EvJMZpB2tiNZa1fLxc98cQ_vXJ0za0D
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
