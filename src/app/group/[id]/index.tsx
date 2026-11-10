@@ -92,6 +92,11 @@ export default function GroupScreen() {
       <Pressable style={ui.buttonOutline} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
         <Text style={ui.buttonOutlineText}>Invite friends ({group.invite_code})</Text>
       </Pressable>
+      <Link href={`/group/${id}/friendly`} asChild>
+        <Pressable style={ui.button}>
+          <Text style={ui.buttonText}>Friendly bets</Text>
+        </Pressable>
+      </Link>
       {SPORTS.map((s) => (
         <Link key={s.key} href={`/group/${id}/${s.key}`} asChild>
           <Pressable style={ui.button}>
