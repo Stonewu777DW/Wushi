@@ -62,3 +62,17 @@ export type FantasyTeam = {
   points_for: number;
   synced_at: string;
 };
+
+export type Tournament = {
+  id: string;
+  group_id: string;
+  host_id: string;
+  name: string;
+  buy_in: number;
+  payout_split: number[]; // percentages by place, e.g. [60, 40]
+  status: 'open' | 'completed' | 'cancelled';
+  created_at: string;
+  completed_at: string | null;
+};
+
+export type TournamentPlayer = { tournament_id: string; user_id: string; place: number | null; payout: number | null };
