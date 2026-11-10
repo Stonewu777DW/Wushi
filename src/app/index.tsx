@@ -3,6 +3,7 @@ import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { Link, router, Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Group } from '../lib/types';
+import { InstallHint } from '../lib/InstallHint';
 import { ui } from '../lib/ui';
 
 export default function Groups() {
@@ -49,6 +50,7 @@ export default function Groups() {
         <Text style={ui.buttonText}>Join group</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
+      <InstallHint />
     </View>
   );
 }
