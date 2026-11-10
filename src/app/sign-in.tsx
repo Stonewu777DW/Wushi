@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { InstallHint } from '../lib/InstallHint';
 import { ui } from '../lib/ui';
 
 // Username + password only. Supabase Auth needs an email, so each username maps to an
@@ -49,6 +50,7 @@ export default function SignIn() {
         <Text style={ui.muted}>New here? Create account</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
+      <InstallHint />
     </View>
   );
 }
