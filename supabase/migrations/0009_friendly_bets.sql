@@ -154,6 +154,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   won int; lost int; reward int;
 begin
+  insert into settlements (ref_id) values (b.id); -- counts the bet for leaderboards, even if everyone lost
   perform lock_members(b.group_id, b.maker_id, b.maker_id);
   if b.escrow_held > 0 then
     insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
@@ -216,17 +217,3 @@ end $$;
 -- Internal helpers are not callable from the API.
 revoke execute on function settle_friendly_bet, lock_members, balance_of, reward_multiplier_for from public, anon, authenticated;
 revoke execute on function create_friendly_bet, place_friendly_wager, resolve_friendly_bet, cancel_friendly_bet from anon;
-
--- A friendly bet with no payout and no maker settlement (everyone lost) still counts as settled for leaderboards.
-create or replace view settled_results with (security_invoker = true) as
-  with settled as (
-    select ref_id, max(created_at) as settled_at
-    from ledger_entries
-    where ref_id is not null
-    group by ref_id
-    having bool_or(reason in ('bet_payout', 'bet_refund', 'maker_settlement'))
-      or ref_id in (select id from friendly_bets where status <> 'open')
-  )
-  select l.group_id, l.user_id, l.amount, s.settled_at
-  from ledger_entries l
-  join settled s using (ref_id);
