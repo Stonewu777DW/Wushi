@@ -19,7 +19,7 @@ export default function Username() {
   return (
     <View style={ui.screen}>
       <Text style={ui.muted}>3 to 20 letters, numbers or underscores. Your friends will see this.</Text>
-      <TextInput style={ui.input} placeholder="username" autoCapitalize="none" value={name} onChangeText={setName} />
+      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="username" autoCapitalize="none" value={name} onChangeText={setName} />
       <Pressable style={ui.button} onPress={save}>
         <Text style={ui.buttonText}>Continue</Text>
       </Pressable>

@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 import { SessionProvider, useSession } from '../lib/session';
 
 function RootStack() {
@@ -25,7 +26,12 @@ function RootStack() {
 export default function RootLayout() {
   return (
     <SessionProvider>
-      <RootStack />
+      {/* Phone-width column, so the web build looks like the app on a wide screen. */}
+      <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#e5e5e5' }}>
+        <View style={{ flex: 1, width: '100%', maxWidth: 430 }}>
+          <RootStack />
+        </View>
+      </View>
     </SessionProvider>
   );
 }

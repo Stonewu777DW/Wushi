@@ -24,4 +24,5 @@ jobs:
       - run: npm ci
       - run: npx expo export --platform web
       - run: npx eas-cli@latest init --non-interactive --force
-      - run: npx eas-cli@latest deploy --non-interactive --dev-domain wushi ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+      # PR #N stays at https://wushi--pr-N.expo.app; main is https://wushi.expo.app
+      - run: npx eas-cli@latest deploy --non-interactive --dev-domain wushi ${{ github.event_name == 'pull_request' && format('--alias pr-{0}', github.event.number) || '--prod' }}
