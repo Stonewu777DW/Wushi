@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
+import { Text } from './Text';
 import { colors, ui } from './ui';
 
 // Chrome/Android fires this event when the site can be installed; it isn't in the TS DOM types.

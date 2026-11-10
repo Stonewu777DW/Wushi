@@ -11,7 +11,7 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 
 ## Web link
 
-`.github/workflows/deploy-web.yml` deploys the web build to Expo Hosting (needs the `EXPO_TOKEN` repo secret). Pull request #N gets a preview at https://wushi--pr-N.expo.app; merging to `main` updates https://wushi.expo.app, the link to share with friends.
+`.github/workflows/deploy-web.yml` deploys the web build to Expo Hosting (needs the `EXPO_TOKEN` repo secret). Each pull request gets a preview link, shown in the "Deploy web" job summary; merging to `main` updates https://wushi.expo.app, the link to share with friends.
 
 ### NFL lines and auto-settlement
 

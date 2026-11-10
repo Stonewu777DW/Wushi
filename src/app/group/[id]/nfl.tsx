@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Text } from '../../../lib/Text';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import type { Game, GameLine, SportsBet } from '../../../lib/types';
@@ -76,7 +77,7 @@ export default function NflScreen() {
 
       {pick && (
         <View style={[ui.card, { borderColor: colors.accent }]}>
-          <Text style={[ui.text, { fontWeight: '600' }]}>{lineLabel(pick.line, pick.game)}</Text>
+          <Text style={{ fontWeight: '600' }}>{lineLabel(pick.line, pick.game)}</Text>
           <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Stake (WuCoins)" keyboardType="number-pad" value={stake} onChangeText={setStake} />
           {Number(stake) > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -93,7 +94,7 @@ export default function NflScreen() {
       {games.length === 0 && <Text style={ui.muted}>No NFL games with lines in the next 7 days.</Text>}
       {games.map((game) => (
         <View key={game.id} style={{ gap: 6, paddingVertical: 8, borderBottomWidth: 1, borderColor: colors.border }}>
-          <Text style={[ui.text, { fontWeight: '600' }]}>
+          <Text style={{ fontWeight: '600' }}>
             {game.away_team} @ {game.home_team}
           </Text>
           <Text style={ui.muted}>{new Date(game.commence_time).toLocaleString()}</Text>
@@ -109,7 +110,7 @@ export default function NflScreen() {
                     onPress={() => setPick({ game, line })}
                     style={{ flex: 1, padding: 8, borderWidth: 1, borderRadius: 6, backgroundColor: colors.surface, borderColor: pick?.game.id === game.id && pick.line === line ? colors.accent : colors.border }}
                   >
-                    <Text style={[ui.text, { fontSize: 12 }]}>{lineLabel(line, game)}</Text>
+                    <Text style={{ fontSize: 12 }}>{lineLabel(line, game)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -122,7 +123,7 @@ export default function NflScreen() {
       {bets.length === 0 && <Text style={ui.muted}>No bets yet.</Text>}
       {bets.map((b) => (
         <View key={b.id} style={ui.row}>
-          <Text style={[ui.text, { flex: 1 }]}>{lineLabel(b, b.games)}</Text>
+          <Text style={{ flex: 1 }}>{lineLabel(b, b.games)}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <WuCoin amount={b.stake} size={14} />
             <Text style={ui.muted}>{b.status === 'open' ? `to win ${toWin(b.stake, b.price)}` : b.status}</Text>

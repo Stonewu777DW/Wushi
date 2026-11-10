@@ -1,4 +1,5 @@
-import { Image, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
+import { Text } from './Text';
 import { colors } from './ui';
 
 export function Avatar({ url, name, size = 40 }: { url: string | null; name: string; size?: number }) {

@@ -19,13 +19,11 @@ export const navTheme: Theme = {
   colors: { ...DarkTheme.colors, primary: colors.accent, background: colors.bg, card: colors.bg, text: colors.text, border: colors.border },
 };
 
-// React Native has no global text color, so every <Text> needs one of these text styles
-// (ui.text, ui.title, ui.muted, ...) or it renders black on black.
+// Import Text from src/lib/Text (not react-native): it defaults to colors.text.
 export const ui = StyleSheet.create({
   screen: { flex: 1, padding: 16, gap: 12, backgroundColor: colors.bg },
-  text: { color: colors.text, fontSize: 16 },
   title: { color: colors.text, fontSize: 24, fontWeight: '700' },
-  muted: { color: colors.muted },
+  muted: { color: colors.muted, fontSize: 14 },
   link: { color: colors.accent, fontWeight: '600' },
   input: { backgroundColor: colors.surface, color: colors.text, borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, fontSize: 16 },
   button: { backgroundColor: colors.accent, borderRadius: 8, padding: 14, alignItems: 'center' },
@@ -36,7 +34,7 @@ export const ui = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 12, gap: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border },
   error: { color: colors.danger },
-  // Toggle/filter pills (e.g. leaderboard period). Pair pill text with ui.text / ui.pillActiveText.
+  // Toggle/filter pills (e.g. leaderboard period). Use ui.pillActiveText on the active pill.
   pill: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 6, paddingHorizontal: 12 },
   pillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   pillActiveText: { color: colors.onAccent, fontWeight: '700' },

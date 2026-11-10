@@ -1,5 +1,5 @@
-import { Image, Text, View } from 'react-native';
-import { colors } from './ui';
+import { Image, View } from 'react-native';
+import { Text } from './Text';
 
 // The WuCoin: a black poker chip with the number 19 (same art as the app icon).
 // Without amount it renders just the chip. signed shows a + on gains.
@@ -9,7 +9,7 @@ export function WuCoin({ amount, size = 20, signed = false }: { amount?: number;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: size * 0.3 }}>
       {chip}
-      <Text style={{ color: colors.text, fontWeight: '700', fontSize: size * 0.8 }}>{signed && amount > 0 ? '+' : ''}{amount.toLocaleString()}</Text>
+      <Text style={{ fontWeight: '700', fontSize: size * 0.8 }}>{signed && amount > 0 ? '+' : ''}{amount.toLocaleString()}</Text>
     </View>
   );
 }
