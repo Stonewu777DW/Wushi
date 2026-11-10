@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "wushi",
+    "name": "Wushi",
     "slug": "wushi",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,12 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "wushi"
   }
 }
