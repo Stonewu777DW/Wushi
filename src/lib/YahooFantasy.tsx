@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
+import { Text } from './Text';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from './supabase';
@@ -37,12 +38,12 @@ export function YahooFantasy({ userId }: { userId: string }) {
 
   return (
     <View style={{ gap: 8 }}>
-      <Text style={[ui.text, { fontWeight: '600' }]}>Yahoo Fantasy</Text>
+      <Text style={{ fontWeight: '600' }}>Yahoo Fantasy</Text>
       {teams.map((t) => (
         <View key={t.team_key} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           {t.logo_url && <Image source={{ uri: t.logo_url }} style={{ width: 36, height: 36, borderRadius: 6 }} />}
           <View>
-            <Text style={ui.text}>{t.team_name}</Text>
+            <Text>{t.team_name}</Text>
             <Text style={ui.muted}>
               {t.league_name} · {record(t)}{t.rank ? ` · #${t.rank}` : ''} · {t.points_for} pts
             </Text>

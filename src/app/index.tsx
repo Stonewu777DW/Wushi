@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, TextInput, View } from 'react-native';
+import { Text } from '../lib/Text';
 import { Link, router, Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Group } from '../lib/types';
@@ -37,7 +38,7 @@ export default function Groups() {
         ListEmptyComponent={<Text style={ui.muted}>No groups yet. Create one or join with an invite code.</Text>}
         renderItem={({ item }) => (
           <Link href={`/group/${item.id}`} style={ui.row}>
-            <Text style={[ui.text, { fontSize: 18 }]}>{item.name}</Text>
+            <Text style={{ fontSize: 18 }}>{item.name}</Text>
           </Link>
         )}
       />

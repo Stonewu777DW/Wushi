@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Share, Pressable, Text, View } from 'react-native';
+import { FlatList, Share, Pressable, View } from 'react-native';
+import { Text } from '../../../lib/Text';
 import { Link, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { Avatar } from '../../../lib/Avatar';
@@ -103,7 +104,7 @@ export default function GroupScreen() {
             onPress={() => setPeriod(p.key)}
             style={[ui.pill, period === p.key && ui.pillActive]}
           >
-            <Text style={period === p.key ? ui.pillActiveText : ui.text}>{p.label}</Text>
+            <Text style={period === p.key ? ui.pillActiveText : undefined}>{p.label}</Text>
           </Pressable>
         ))}
       </View>
@@ -117,12 +118,12 @@ export default function GroupScreen() {
               <Text style={ui.muted}>{index + 1}.</Text>
               <Avatar url={item.avatar_url} name={item.name} size={32} />
               <View>
-                <Text style={ui.text}>{item.name}</Text>
+                <Text>{item.name}</Text>
                 {teams.has(item.user_id) && (
                   <Text style={ui.muted}>{teams.get(item.user_id)!.team_name} · {record(teams.get(item.user_id)!)}</Text>
                 )}
               </View>
-              <Text style={ui.text}>{trophies(item.user_id)}</Text>
+              <Text>{trophies(item.user_id)}</Text>
             </View>
             <WuCoin amount={item.balance} size={18} signed={period !== 'all'} />
           </View>
@@ -133,11 +134,11 @@ export default function GroupScreen() {
               <Text style={ui.title}>Hall of fame</Text>
               {awards.map((a) => (
                 <View key={`${a.kind}-${a.period_start}-${a.user_id}`} style={ui.row}>
-                  <Text style={[ui.text, a.kind === 'year' && { fontWeight: '700' }]}>
+                  <Text style={a.kind === 'year' ? { fontWeight: '700' } : undefined}>
                     {a.kind === 'year' ? '🏆' : '🏅'} {awardLabel(a)}
                   </Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={ui.text}>{nameOf.get(a.user_id)}</Text>
+                    <Text>{nameOf.get(a.user_id)}</Text>
                     <WuCoin amount={a.net} size={16} signed />
                   </View>
                 </View>

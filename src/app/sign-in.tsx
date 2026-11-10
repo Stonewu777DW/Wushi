@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
+import { Text } from '../lib/Text';
 import { supabase } from '../lib/supabase';
 import { InstallHint } from '../lib/InstallHint';
 import { placeholder, ui } from '../lib/ui';
