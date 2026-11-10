@@ -13,9 +13,9 @@ Betting between friends with WuCoins. Expo (React Native) + TypeScript, Supabase
 
 `.github/workflows/deploy-web.yml` deploys the web build to Expo Hosting (needs the `EXPO_TOKEN` repo secret). Pull request #N gets a preview at https://wushi--pr-N.expo.app; merging to `main` updates https://wushi.expo.app, the link to share with friends.
 
-### NFL lines and auto-settlement
+### Sports lines and auto-settlement
 
-The app is the house for sports bets. `supabase/functions/sync-sports` pulls NFL games and lines (moneyline, spread, total; DraftKings when listed) and final scores from [The Odds API](https://the-odds-api.com), then settles open bets.
+The app is the house for sports bets on NFL, NBA, MLB and NHL. `supabase/functions/sync-sports` pulls games and lines (moneyline, spread, total; DraftKings when listed) and final scores from [The Odds API](https://the-odds-api.com), then settles open bets. To add a league, add its Odds API key to `SPORTS` in `src/lib/sports.ts` and in the function (leagues that can draw, like soccer, need a `draw` outcome first).
 
 1. Get an Odds API key, then set the function's secrets and deploy it (the cron call authenticates with `CRON_SECRET`, not a JWT):
    ```sh
@@ -33,7 +33,7 @@ The app is the house for sports bets. `supabase/functions/sync-sports` pulls NFL
      );
    $$);
    ```
-   Each run costs 5 Odds API credits (3 for odds, 2 for scores). Every 6 hours is about 600 credits a month, just over the free tier's 500; every 8 hours fits.
+   Each run costs 5 Odds API credits per in-season league (3 for odds, 2 for scores); off-season leagues are skipped. With 3 leagues in season, every 6 hours is about 1,800 credits a month, well over the free tier's 500, so use a paid plan or schedule it less often. Lines are only as fresh as the schedule, and a bet locks the line it was placed at, so stale lines are the house's risk.
 
 ## How coins work
 
