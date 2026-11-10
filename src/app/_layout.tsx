@@ -15,6 +15,7 @@ function RootStack() {
       </Stack.Protected>
       <Stack.Protected guard={!!session && !!username}>
         <Stack.Screen name="index" options={{ title: 'Your groups' }} />
+        <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="group/[id]" options={{ title: 'Group' }} />
       </Stack.Protected>
     </Stack>

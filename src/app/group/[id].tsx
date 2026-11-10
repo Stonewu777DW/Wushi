@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react';
 import { FlatList, Share, Pressable, Text, View } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-import type { Group, Standing } from '../../lib/types';
+import { Avatar } from '../../lib/Avatar';
+import type { Group, Profile, Standing } from '../../lib/types';
 import { ui } from '../../lib/ui';
 
 export default function GroupScreen() {
@@ -14,14 +15,18 @@ export default function GroupScreen() {
     supabase.from('groups').select('*').eq('id', id).single<Group>().then(({ data }) => setGroup(data));
     Promise.all([
       supabase.from('group_balances').select('user_id, balance').eq('group_id', id),
-      supabase.from('group_members').select('user_id, profiles(username)').eq('group_id', id),
+      supabase.from('group_members').select('user_id, profiles(username, display_name, avatar_url)').eq('group_id', id),
     ]).then(([balances, members]) => {
       const balanceOf = new Map((balances.data ?? []).map((b) => [b.user_id as string, b.balance as number]));
-      const rows = (members.data ?? []).map((m) => ({
-        user_id: m.user_id as string,
-        username: (m.profiles as unknown as { username: string }).username,
-        balance: balanceOf.get(m.user_id as string) ?? 0,
-      }));
+      const rows = (members.data ?? []).map((m) => {
+        const p = m.profiles as unknown as Pick<Profile, 'username' | 'display_name' | 'avatar_url'>;
+        return {
+          user_id: m.user_id as string,
+          name: p.display_name ?? p.username,
+          avatar_url: p.avatar_url,
+          balance: balanceOf.get(m.user_id as string) ?? 0,
+        };
+      });
       setStandings(rows.sort((a, b) => b.balance - a.balance));
     });
   }, [id]);
@@ -40,8 +45,12 @@ export default function GroupScreen() {
         data={standings}
         keyExtractor={(s) => s.user_id}
         renderItem={({ item, index }) => (
-          <View style={ui.row}>
-            <Text>{index + 1}. {item.username}</Text>
+          <View style={[ui.row, { alignItems: 'center' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Text>{index + 1}.</Text>
+              <Avatar url={item.avatar_url} name={item.name} size={32} />
+              <Text>{item.name}</Text>
+            </View>
             <Text>{item.balance} WC</Text>
           </View>
         )}

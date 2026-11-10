@@ -5,6 +5,9 @@
 create table profiles (
   id uuid primary key references auth.users on delete cascade,
   username text not null unique check (username ~ '^[a-zA-Z0-9_]{3,20}$'),
+  display_name text check (length(display_name) <= 40),
+  bio text check (length(bio) <= 160),
+  avatar_url text,
   created_at timestamptz not null default now()
 );
 

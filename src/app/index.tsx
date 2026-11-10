@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
-import { Link, router, useFocusEffect } from 'expo-router';
+import { Link, router, Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Group } from '../lib/types';
 import { ui } from '../lib/ui';
@@ -29,6 +29,7 @@ export default function Groups() {
 
   return (
     <View style={ui.screen}>
+      <Stack.Screen options={{ headerRight: () => <Link href="/profile">Profile</Link> }} />
       <FlatList
         data={groups}
         keyExtractor={(g) => g.id}
@@ -48,9 +49,6 @@ export default function Groups() {
         <Text style={ui.buttonText}>Join group</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
-      <Pressable onPress={() => supabase.auth.signOut()}>
-        <Text style={ui.muted}>Sign out</Text>
-      </Pressable>
     </View>
   );
 }

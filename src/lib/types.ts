@@ -1,4 +1,12 @@
 // Mirrors supabase/migrations. Replace with `supabase gen types typescript` once a project exists.
+export type Profile = {
+  id: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+};
+
 export type Group = {
   id: string;
   name: string;
@@ -8,4 +16,4 @@ export type Group = {
   created_at: string;
 };
 
-export type Standing = { user_id: string; username: string; balance: number };
+export type Standing = { user_id: string; name: string; avatar_url: string | null; balance: number };
