@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, TextInput, View } from 'react-native';
+import { Text } from '../lib/Text';
 import { Link, router, Stack, useFocusEffect } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Group } from '../lib/types';
 import { InstallHint } from '../lib/InstallHint';
-import { ui } from '../lib/ui';
+import { placeholder, ui } from '../lib/ui';
 
 export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -30,7 +31,7 @@ export default function Groups() {
 
   return (
     <View style={ui.screen}>
-      <Stack.Screen options={{ headerRight: () => <Link href="/profile">Profile</Link> }} />
+      <Stack.Screen options={{ headerRight: () => <Link href="/profile" style={[ui.link, { paddingHorizontal: 16 }]}>Profile</Link> }} />
       <FlatList
         data={groups}
         keyExtractor={(g) => g.id}
@@ -41,11 +42,11 @@ export default function Groups() {
           </Link>
         )}
       />
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="New group name" value={newName} onChangeText={setNewName} />
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="New group name" value={newName} onChangeText={setNewName} />
       <Pressable style={ui.button} onPress={() => call('create_group', { group_name: newName.trim() })}>
         <Text style={ui.buttonText}>Create group</Text>
       </Pressable>
-      <TextInput style={ui.input} placeholderTextColor="#999" placeholder="Invite code" autoCapitalize="characters" value={inviteCode} onChangeText={setInviteCode} />
+      <TextInput style={ui.input} placeholderTextColor={placeholder} placeholder="Invite code" autoCapitalize="characters" value={inviteCode} onChangeText={setInviteCode} />
       <Pressable style={ui.button} onPress={() => call('join_group', { code: inviteCode })}>
         <Text style={ui.buttonText}>Join group</Text>
       </Pressable>
