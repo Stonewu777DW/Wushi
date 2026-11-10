@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { cancelBet, getBet, listMembers, listWagers, placeWager, resolveBet, timeLeft } from '../../../lib/friendlyBets';
-import type { BetSide as Side, FriendlyBet, FriendlyWager as Wager } from '../../../lib/types';
-import { useSession } from '../../../lib/session';
-import { supabase } from '../../../lib/supabase';
-import { colors, ui } from '../../../lib/ui';
-import { WuCoin } from '../../../lib/WuCoin';
+import { cancelBet, getBet, listMembers, listWagers, placeWager, resolveBet, timeLeft } from '../../../../lib/friendlyBets';
+import type { BetSide as Side, FriendlyBet, FriendlyWager as Wager } from '../../../../lib/types';
+import { useSession } from '../../../../lib/session';
+import { supabase } from '../../../../lib/supabase';
+import { colors, ui } from '../../../../lib/ui';
+import { WuCoin } from '../../../../lib/WuCoin';
 
 export default function FriendlyBetScreen() {
   const { betId } = useLocalSearchParams<{ betId: string }>();

@@ -17,4 +17,6 @@ export const ui = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border },
   card: { backgroundColor: colors.surface, borderRadius: 12, padding: 14, gap: 8, borderWidth: 1, borderColor: colors.border },
   error: { color: colors.danger },
+  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 6, paddingHorizontal: 12 },
+  chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
 });

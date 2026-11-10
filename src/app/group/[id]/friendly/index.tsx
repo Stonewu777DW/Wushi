@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { Link, router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { listBets, listMembers, timeLeft } from '../../lib/friendlyBets';
-import type { FriendlyBet } from '../../lib/types';
-import { colors, ui } from '../../lib/ui';
+import { listBets, listMembers, timeLeft } from '../../../../lib/friendlyBets';
+import type { FriendlyBet } from '../../../../lib/types';
+import { colors, ui } from '../../../../lib/ui';
 
 export default function FriendlyBetsScreen() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { id: groupId } = useLocalSearchParams<{ id: string }>();
   const [bets, setBets] = useState<FriendlyBet[]>([]);
   const [names, setNames] = useState(new Map<string, string>());
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export default function FriendlyBetsScreen() {
   return (
     <View style={ui.screen}>
       <Stack.Screen options={{ title: 'Friendly bets' }} />
-      <Pressable style={ui.button} onPress={() => router.push({ pathname: '/friendly/new', params: { groupId } })}>
+      <Pressable style={ui.button} onPress={() => router.push(`/group/${groupId}/friendly/new`)}>
         <Text style={ui.buttonText}>Make a line</Text>
       </Pressable>
       {error && <Text style={ui.error}>{error}</Text>}
@@ -34,7 +34,7 @@ export default function FriendlyBetsScreen() {
         contentContainerStyle={{ gap: 10 }}
         ListEmptyComponent={<Text style={ui.muted}>No bets yet. Make the first line.</Text>}
         renderItem={({ item }) => (
-          <Link href={`/friendly/bet/${item.id}`} asChild>
+          <Link href={`/group/${groupId}/friendly/${item.id}`} asChild>
             <Pressable style={ui.card}>
               <Text style={[ui.text, { fontWeight: '700' }]}>{item.title}</Text>
               <Text style={ui.muted}>

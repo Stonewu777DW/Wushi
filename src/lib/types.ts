@@ -46,3 +46,48 @@ export type FriendlyWager = {
   payout: number | null;
   created_at: string;
 };
+
+export type Award = { user_id: string; kind: 'month' | 'year'; period_start: string; net: number };
+
+export type SportsMarket = 'h2h' | 'spreads' | 'totals';
+export type SportsOutcome = 'home' | 'away' | 'over' | 'under';
+
+export type GameLine = { market: SportsMarket; outcome: SportsOutcome; point: number | null; price: number };
+
+export type Game = {
+  id: string;
+  home_team: string;
+  away_team: string;
+  commence_time: string;
+  home_score: number | null;
+  away_score: number | null;
+  completed: boolean;
+  game_lines: GameLine[];
+};
+
+export type SportsBet = {
+  id: string;
+  game_id: string;
+  market: SportsMarket;
+  outcome: SportsOutcome;
+  point: number | null;
+  price: number;
+  stake: number;
+  status: 'open' | 'won' | 'lost' | 'push';
+  created_at: string;
+  games: Pick<Game, 'home_team' | 'away_team'>;
+};
+
+export type FantasyTeam = {
+  team_key: string;
+  user_id: string;
+  team_name: string;
+  league_name: string;
+  logo_url: string | null;
+  wins: number;
+  losses: number;
+  ties: number;
+  rank: number | null;
+  points_for: number;
+  synced_at: string;
+};

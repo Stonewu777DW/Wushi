@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { createBet, listMembers, type Member } from '../../lib/friendlyBets';
-import { useSession } from '../../lib/session';
-import { colors, ui } from '../../lib/ui';
+import { createBet, listMembers, type Member } from '../../../../lib/friendlyBets';
+import { useSession } from '../../../../lib/session';
+import { colors, ui } from '../../../../lib/ui';
 
 const DAY = 86_400_000;
 // Longer bets pay the maker more for a good line, so the length is a deliberate choice.
@@ -33,7 +33,7 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
 }
 
 export default function NewFriendlyBet() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { id: groupId } = useLocalSearchParams<{ id: string }>();
   const me = useSession().session!.user.id;
   const [members, setMembers] = useState<Member[]>([]);
   const [title, setTitle] = useState('');
@@ -57,7 +57,7 @@ export default function NewFriendlyBet() {
         subjectId,
         closesAt: new Date(Date.now() + duration.ms),
       });
-      router.replace(`/friendly/bet/${bet.id}`);
+      router.replace(`/group/${groupId}/friendly/${bet.id}`);
     } catch (e) {
       setError((e as Error).message);
     }
