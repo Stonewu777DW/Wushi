@@ -99,9 +99,9 @@ export default function GroupScreen() {
           </Pressable>
         </Link>
       ))}
-      <Link href={`/group/${id}/tournaments`} asChild>
+      <Link href={`/group/${id}/events`} asChild>
         <Pressable style={ui.button}>
-          <Text style={ui.buttonText}>Tournaments</Text>
+          <Text style={ui.buttonText}>Events</Text>
         </Pressable>
       </Link>
       <Text style={ui.title}>Leaderboard</Text>
