@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { FlatList, Share, Pressable, Text, View } from 'react-native';
-import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { Avatar } from '../../lib/Avatar';
 import type { Group, Profile, Standing } from '../../lib/types';
@@ -39,6 +39,9 @@ export default function GroupScreen() {
       <Stack.Screen options={{ title: group.name }} />
       <Pressable style={ui.button} onPress={() => Share.share({ message: `Join my Wushi group "${group.name}" with code ${group.invite_code}` })}>
         <Text style={ui.buttonText}>Invite friends ({group.invite_code})</Text>
+      </Pressable>
+      <Pressable style={ui.button} onPress={() => router.push(`/friendly/${group.id}`)}>
+        <Text style={ui.buttonText}>Friendly bets</Text>
       </Pressable>
       <Text style={ui.title}>Standings</Text>
       <FlatList
