@@ -127,14 +127,17 @@ begin
 end $$;
 
 -- Shared by the completion paths: pays out event_players.payout and closes the event.
+-- plpgsql, not sql: a sql body is checked when created, and 'event_payout' (added above in this
+-- same transaction) can't be used until it's committed.
 create function pay_out_event(e events) returns void
-language sql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public as $$
+begin
   insert into ledger_entries (group_id, user_id, amount, reason, ref_id)
     select e.group_id, user_id, payout, 'event_payout', e.id
     from event_players where event_id = e.id and payout > 0;
   update events set status = 'completed', completed_at = now() where id = e.id;
   insert into settlements (ref_id) values (e.id);
-$$;
+end $$;
 revoke execute on function pay_out_event from public, anon, authenticated;
 
 -- Golf and other events. ranked = every player, 1st place down.

@@ -19,7 +19,7 @@ declare
   e uuid;
 begin
   if to_regclass('public.friendly_bets') is null or to_regclass('public.events') is null then
-    raise exception 'Run update-database.sql first, then this file';
+    raise exception 'Run the database update first, then this file';
   end if;
 
   -- To act as a user, set the request's JWT claims: auth.uid() reads them.
